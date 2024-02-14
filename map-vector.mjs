@@ -89,11 +89,8 @@ function drawCities() {
         const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
 
         const name = fCSVGE('text');
-        // worked well for labels to the right of the city
-        // name.setAttribute('x', location.x+.5);
-        // name.setAttribute('y', location.y+.3);
-        name.setAttribute('x', location.x);
-        name.setAttribute('y', location.y-.5);
+        name.setAttribute('x', location.x+.5);
+        name.setAttribute('y', location.y+.3);
         name.setAttribute('transform', 'rotate(' + angle + ', ' + location.x +', ' + location.y + ')');
         name.innerHTML = city.name;
         group.appendChild(name);
