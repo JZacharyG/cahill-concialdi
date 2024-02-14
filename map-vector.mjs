@@ -2,7 +2,7 @@
 // VECTOR MAP LAYERS DRAWING ROUTINES
 // ------------------------------------------------------------------
 
-import { fGID, fQS, fCSVGE, getJson, EARTH_TILT, MAX_COLOR_VALUE, DEGS_IN_CIRCLE } from './globals.mjs';
+import { fGID, fQS, fCSVGE, getJson, EARTH_TILT, MAX_COLOR_VALUE, DEGS_IN_CIRCLE, rad2Deg } from './globals.mjs';
 import { LatLon } from './data-types.mjs';
 import { MAP_VIEW_ORIGIN, MAP_WIDTH, MAP_HEIGHT, MAP_TILT_DEG,
          MAP_AREAS, project } from './concialdi.mjs';
@@ -29,6 +29,7 @@ export function drawVectorMap() {
   drawSpecialCircles();
   drawCountries();
   drawBoundaries();
+  drawCities();
 }
 
 // ------------------------------------------------------------------
@@ -72,31 +73,62 @@ function convertPointListsToSvgPath(pointLists, isClosed) {
 
 // ------------------------------------------------------------------
 
+function drawCities() {
+  getJson('ne-10m-populated-places.json').then(cities => {
+    cities.forEach(city => {
+      if (city.scalerank <= 4) {
+        const location = project(new LatLon(city.coordinates[1], city.coordinates[0]));
+        const group = fCSVGE('g');
+        const dot = fCSVGE('circle');
+        dot.setAttribute('cx', location.x);
+        dot.setAttribute('cy', location.y);
+        dot.setAttribute('r', ((city.rank_max+6)/70).toString()+'px');
+        group.appendChild(dot);
+
+        const l2 = project(new LatLon(city.coordinates[1], city.coordinates[0]+1));
+        const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
+
+        const name = fCSVGE('text');
+        // worked well for labels to the right of the city
+        // name.setAttribute('x', location.x+.5);
+        // name.setAttribute('y', location.y+.3);
+        name.setAttribute('x', location.x);
+        name.setAttribute('y', location.y-.5);
+        name.setAttribute('transform', 'rotate(' + angle + ', ' + location.x +', ' + location.y + ')');
+        name.innerHTML = city.name;
+        group.appendChild(name);
+
+        fGID('cities').appendChild(group);
+      }
+    });
+  });
+}
+
 function drawCountries() {
   getJson('ne-country-areas.json').then(countries => {
     countries.forEach(country => {
 
       const path = convertGeoJsonToSvgPath(country[1]);
       path.id = 'iso-' + country[0];
-      path.onmouseover = () => {
-        fGID('annotation').innerHTML = country[0];
-      };
+      // path.onmouseover = () => {
+      //   fGID('annotation').innerHTML = country[0];
+      // };
 
-      // Compute fill color based on the country's position
-      // where the average of the country's coordinates is a proxy for position
-      const flatLonLatList = [].concat(...[].concat(...country[1]));
-      const numCoords = flatLonLatList.length;
-      const sumLat = flatLonLatList.reduce((sum, lonLat) => sum + lonLat[1], 0);
-      const sumLon = flatLonLatList.reduce((sum, lonLat) => sum + lonLat[0], 0);
-      let red   = MAX_COLOR_VALUE/2 * (1 + sumLat / numCoords / (DEGS_IN_CIRCLE/4));
-      let green = MAX_COLOR_VALUE/2 * (1 + sumLon / numCoords / (DEGS_IN_CIRCLE/2));
-      let blue  = MAX_COLOR_VALUE - (red + green)/2;
-      red   = Math.min(MAX_COLOR_VALUE, red  *1.25);
-      green = Math.min(MAX_COLOR_VALUE, green*1.25);
-      blue  = Math.min(MAX_COLOR_VALUE, blue *1.25);
-      const rgb = `rgb(${red},${green},${blue})`;
-      path.setAttribute('fill'  , rgb);
-      path.setAttribute('stroke', rgb);
+      // // Compute fill color based on the country's position
+      // // where the average of the country's coordinates is a proxy for position
+      // const flatLonLatList = [].concat(...[].concat(...country[1]));
+      // const numCoords = flatLonLatList.length;
+      // const sumLat = flatLonLatList.reduce((sum, lonLat) => sum + lonLat[1], 0);
+      // const sumLon = flatLonLatList.reduce((sum, lonLat) => sum + lonLat[0], 0);
+      // let red   = MAX_COLOR_VALUE/2 * (1 + sumLat / numCoords / (DEGS_IN_CIRCLE/4));
+      // let green = MAX_COLOR_VALUE/2 * (1 + sumLon / numCoords / (DEGS_IN_CIRCLE/2));
+      // let blue  = MAX_COLOR_VALUE - (red + green)/2;
+      // red   = Math.min(MAX_COLOR_VALUE, red  *1.25);
+      // green = Math.min(MAX_COLOR_VALUE, green*1.25);
+      // blue  = Math.min(MAX_COLOR_VALUE, blue *1.25);
+      // const rgb = `rgb(${red},${green},${blue})`;
+      // path.setAttribute('fill'  , rgb);
+      // path.setAttribute('stroke', rgb);
 
       fGID('countries').appendChild(path);
     });

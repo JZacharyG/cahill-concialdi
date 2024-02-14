@@ -55,12 +55,13 @@ svg, canvas {
 #countries {
   stroke-width: 0.01;
   stroke-linejoin: round;
+  fill: grey;
 }
 
-#countries path:hover {
+/*#countries path:hover {
   fill: #ff8;
 }
-
+*/
 #boundaries {
   fill: none;
   stroke: #234;
@@ -72,6 +73,15 @@ svg, canvas {
 #boundaries path.disputed {
   stroke-dasharray: 0.5 0.2;
 }
+
+#cities text {
+  font-size: 1px;
+  text-anchor: middle;
+  display: none;
+}
+#cities circle:hover~text {
+  display: unset;
+}
   </style>
   <g id="svg-map-wrapper">
     <path id="background" />
@@ -79,6 +89,7 @@ svg, canvas {
     <g id="circles"></g>
     <g id="countries"></g>
     <g id="boundaries"></g>
+    <g id="cities"></g>
   </g>
 </svg>
 <div id="annotation"></div>
