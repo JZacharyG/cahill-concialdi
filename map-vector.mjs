@@ -76,7 +76,7 @@ function convertPointListsToSvgPath(pointLists, isClosed) {
 function drawCities() {
   getJson('ne-10m-populated-places.json').then(cities => {
     cities.forEach(city => {
-      if (city.scalerank <= 4) {
+      if (city.scalerank <= 3) {
         const location = project(new LatLon(city.coordinates[1], city.coordinates[0]));
         const group = fCSVGE('g');
         const dot = fCSVGE('circle');

@@ -16,15 +16,6 @@ svg, canvas {
   position: absolute;
   width: 100vw;
 }
-
-#annotation {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  color: #fff;
-  font-size: 30px;
-}
-
 </style>
 <body>
 
@@ -32,20 +23,20 @@ svg, canvas {
 <svg>
   <style>
 #background {
-  fill: #123;
+  fill: hsl(210,56%,66%);
   stroke: none;
 }
 
 #graticule {
   fill: none;
   stroke-width: 0.15;
-  stroke: #246;
+  stroke: hsl(210,56%,56%);
 }
 
 #circles {
   fill: none;
   stroke-width: 0.3;
-  stroke: #357;
+  stroke: hsl(210,56%,50%);
 }
 
 .polar-tropic {
@@ -55,16 +46,12 @@ svg, canvas {
 #countries {
   stroke-width: 0.01;
   stroke-linejoin: round;
-  fill: grey;
+  fill: hsl(97,43%,50%);
 }
 
-/*#countries path:hover {
-  fill: #ff8;
-}
-*/
 #boundaries {
   fill: none;
-  stroke: #234;
+  stroke: hsl(97,43%,25%);
   stroke-width: 0.1;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -88,7 +75,6 @@ svg, canvas {
     <g id="cities"></g>
   </g>
 </svg>
-<div id="annotation"></div>
 
 <script src="https://unpkg.com/complex.js@2.0.11/complex.min.js"></script>
 <script type="module">
