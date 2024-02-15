@@ -30,7 +30,8 @@ svg, canvas {
 #graticule {
   fill: none;
   stroke-width: 0.15;
-  stroke: hsl(210,56%,56%);
+  stroke-opacity: .05;
+  stroke: #000;
 }
 
 #circles {
@@ -76,11 +77,11 @@ svg, canvas {
   </style>
   <g id="svg-map-wrapper">
     <path id="background" />
-    <g id="graticule"></g>
     <g id="circles"></g>
     <g id="countries"></g>
     <g id="states"></g>
     <g id="boundaries"></g>
+    <g id="graticule"></g>
     <g id="cities"></g>
   </g>
 </svg>

@@ -25,7 +25,7 @@ export function initVectorMap() {
 export function drawVectorMap() {
   initVectorMap();
   drawBackground();
-  drawGraticule(10);
+  drawGraticule(2);
   drawSpecialCircles();
   drawCountries();
   drawStates();
