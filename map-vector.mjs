@@ -28,7 +28,8 @@ export function drawVectorMap() {
   drawGraticule(10);
   drawSpecialCircles();
   drawCountries();
-  drawBoundaries();
+  drawStates();
+  //drawBoundaries();
   drawCities();
 }
 
@@ -128,6 +129,15 @@ function drawCountries() {
       // path.setAttribute('stroke', rgb);
 
       fGID('countries').appendChild(path);
+    });
+  });
+}
+
+function drawStates() {
+  getJson('ne_50m_admin_1_states_provinces_lakes.json').then(states => {
+    states.forEach(state => {
+      const path = convertGeoJsonToSvgPath(state.coordinates);
+      fGID('states').appendChild(path);
     });
   });
 }
