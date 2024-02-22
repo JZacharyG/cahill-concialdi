@@ -22,10 +22,10 @@ const NASA_BLACK_FILENAME = 'nasa-black-marble.jpg';
 
 // Source raster maps' pixels per degree measure.
 // Note: All maps are expected to have 3600×1800 dimensions.
-const SOURCE_RASTER_PPD = 10;
+const SOURCE_RASTER_PPD = 45;
 
 // HiDPI factor: Canvas dimensions will be upscaled by this factor
-const CANVAS_PIXEL_DENSITY = 2;
+const CANVAS_PIXEL_DENSITY = 16;
 
 // Min-max distance of the solar terminator in radians from the solar position;
 // interval is used for terminator "blurring"
