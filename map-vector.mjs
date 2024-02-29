@@ -141,7 +141,7 @@ function drawStateBoundaries() {
       const adm0 = state.properties.ADM0_A3;
       if (show_admin1.includes(adm0)) {
         const path = convertGeoJsonToSvgPath(state.geometry.coordinates);
-        fGID('stateboundaries').appendChild(path);
+        fGID('state-boundaries').appendChild(path);
       }
     });
   });
@@ -149,7 +149,7 @@ function drawStateBoundaries() {
     states.forEach(state => {
       const path = convertGeoJsonToSvgPath([state.geometry.coordinates]);
       //path.setAttribute('data', state.properties.NAME);
-      fGID('stateboundaries').appendChild(path);
+      fGID('state-boundaries').appendChild(path);
     });
   });
 }
