@@ -47,7 +47,7 @@ function convertGeoJsonToSvgPath(geoJson) {
       .map(lineString =>
         lineString
           .map(lonLat => project(new LatLon(lonLat[1], lonLat[0])))
-          .map((point, idx) => (idx ? 'L' : 'M') + point.toString())
+          .map((point, idx) => (idx ? 'L' : 'M') + point.toString(3))
           .join('') + (isMultiPolygon ? 'z' : '')
       )
       .join(''),
@@ -64,7 +64,7 @@ function convertPointListsToSvgPath(pointLists, isClosed) {
     'd',
     pointLists
       .map(list =>
-        list.map((point, idx) => (idx ? 'L' : 'M') + point.toString()).join('') +
+        list.map((point, idx) => (idx ? 'L' : 'M') + point.toString(3)).join('') +
         (isClosed ? 'z' : '')
       )
       .join(''),
@@ -160,7 +160,7 @@ function drawBoundaries() {
   // ['Disputed (please verify)', 'Indefinite (please verify)', 'Indeterminant frontier', 'International boundary (verify)', 'Lease limit', 'Line of control (please verify)', 'Overlay limit', 'Unrecognized']
   getJson('ne_10m_admin_0_boundary_lines_land.json').then(boundaries => {
     boundaries.forEach(boundary => {
-      if (boundary.properties.FEATURECLA === 'Lease limit') return;
+      if (boundary.properties.FEATURECLA === 'Lease limit' || boundary.properties.FEATURECLA === 'Overlay limit') return;
       const path = convertGeoJsonToSvgPath(boundary.geometry.coordinates);
       if (boundary.properties.FEATURECLA !== 'International boundary (verify)') path.classList.add('disputed');
       //path.setAttribute('data', boundary.properties.ADM0_A3_R+'-'+boundary.properties.ADM0_A3_L);
@@ -351,6 +351,6 @@ function drawBackground() {
   // Draw background
   fGID('background').setAttribute(
     'd',
-    points.map((point, idx) => (idx ? 'L' : 'M') + point.toString()).join(''),
+    points.map((point, idx) => (idx ? 'L' : 'M') + point.toString(3)).join(''),
   );
 }
