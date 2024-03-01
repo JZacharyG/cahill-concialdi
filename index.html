@@ -44,19 +44,25 @@ svg, canvas {
 #graticule {
   fill: none;
   stroke-width: 0.03;
-  stroke-opacity: .2;
+  opacity: .5;
+  stroke-opacity:.4;
   stroke: #000;
 }
 
-#circles {
+#circles, #equator-mask {
   fill: none;
-  stroke-width: 0.03;
-  stroke-opacity: .3;
+  stroke-width: 0.07;
+  stroke-opacity: 1;
   stroke: #000;
+}
+
+#equator-mask {
+  stroke: skyblue;
 }
 
 .polar-tropic {
   stroke-dasharray: 1 1;
+  stroke: none;
 }
 
 #countries {
@@ -121,11 +127,12 @@ svg, canvas {
   </style>
   <g id="svg-map-wrapper">
     <path id="background" />
-    <g id="circles"></g>
+    <g id="equator-mask"></g>
     <g id="countries"></g>
     <g id="state-boundaries"></g>
     <g id="boundaries"></g>
-    <g id="graticule"></g>
+    <g id="graticule">
+    <g id="circles"></g></g>
     <g id="cities"></g>
   </g>
 </svg>

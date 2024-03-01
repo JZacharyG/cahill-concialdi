@@ -201,6 +201,7 @@ export function drawGraticule(interval = DEFAULT_INTERVAL) {
       lat <=    Math.floor(area.neCorner.lat/interval)*interval;
       lat += interval
     ) {
+      if (lat === 0) continue; // Handle the equator elsewhere
       points = [];
       for (let lon = area.swCorner.lon; lon <= endLon; lon++) {
         points.push(project(new LatLon(lat, lon), idx));
@@ -238,7 +239,7 @@ export function drawSpecialCircles() {
 
   let pointLists;
   let points;
-  let path;
+  let path, path2;
 
   // Generate equator
   pointLists = [];
@@ -261,8 +262,10 @@ export function drawSpecialCircles() {
 
   // Draw equator
   path = convertPointListsToSvgPath(pointLists, false);
+  path2 = convertPointListsToSvgPath(pointLists, false);
   path.classList.add('equator');
   fGID('circles').appendChild(path);
+  fGID('equator-mask').appendChild(path2);
 
   pointLists = [];
 
