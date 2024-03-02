@@ -16,16 +16,17 @@ const NUM_CANVAS_DATA_CHANNELS = 4;
 
 // Filenames of the source raster maps in plate carrée projection.
 const NE_I_FILENAME       = 'ne-i.jpg';
+const NE_II_FILENAME      = 'ne-ii-large-recolored2.png';
 const NE_HYPSO_FILENAME   = 'ne-hypso.jpg';
 const NASA_BLUE_FILENAME  = 'nasa-blue-marble-ng.jpg';
 const NASA_BLACK_FILENAME = 'nasa-black-marble.jpg';
 
 // Source raster maps' pixels per degree measure.
 // Note: All maps are expected to have 3600×1800 dimensions.
-const SOURCE_RASTER_PPD = 45;
+const SOURCE_RASTER_PPD = 60;
 
 // HiDPI factor: Canvas dimensions will be upscaled by this factor
-const CANVAS_PIXEL_DENSITY = 16;
+const CANVAS_PIXEL_DENSITY = 17;
 
 // Min-max distance of the solar terminator in radians from the solar position;
 // interval is used for terminator "blurring"
@@ -46,6 +47,7 @@ class RasterStyle {
 
 export const [
   RASTER_NE_I,
+  RASTER_NE_II,
   RASTER_NE_HYPSO,
   RASTER_NASA_BLUE,
   RASTER_NASA_BLACK,
@@ -54,6 +56,7 @@ export const [
   RASTER_NASA_DAY_NIGHT,
 ] = [
   [[NE_I_FILENAME                          ], false, '#0002'],
+  [[NE_II_FILENAME                         ], false, '#0002'],
   [[NE_HYPSO_FILENAME                      ], false, '#0002'],
   [[NASA_BLUE_FILENAME                     ], false, '#fff3'],
   [[NASA_BLACK_FILENAME                    ], false, '#fff3'],

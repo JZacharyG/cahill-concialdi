@@ -28,9 +28,9 @@ export function drawVectorMap() {
   drawGraticule(2);
   drawSpecialCircles();
   drawCountries();
-  drawStates();
   //drawBoundaries();
   drawCities();
+  drawStateBoundaries();
 }
 
 // ------------------------------------------------------------------
@@ -38,9 +38,9 @@ export function drawVectorMap() {
 // Convert GeoJSON LineString or MultiPolygon coordinates to an SVG path,
 // doing projection along the way
 function convertGeoJsonToSvgPath(geoJson) {
-  const isMultiPolygon = typeof geoJson[0][0] !== 'number';
+  const isMultiPolygon = typeof geoJson[0][0][0] !== 'number';
   const path = fCSVGE('path');
-  const lineStrings = isMultiPolygon ? [].concat(...geoJson) : [geoJson];
+  const lineStrings = isMultiPolygon ? [].concat(...geoJson) : geoJson;
   path.setAttribute(
     'd',
     lineStrings
@@ -74,11 +74,13 @@ function convertPointListsToSvgPath(pointLists, isClosed) {
 
 // ------------------------------------------------------------------
 
+const show_admin1 = ['USA', 'AUS', 'CAN'];
+
 function drawCities() {
-  getJson('ne-10m-populated-places.json').then(cities => {
+  getJson('ne_10m_populated_places_simple.json').then(cities => {
     cities.forEach(city => {
-      if (city.scalerank <= 3) {
-        const location = project(new LatLon(city.coordinates[1], city.coordinates[0]));
+      if (city.properties.scalerank <= 2 || city.properties.featurecla === 'Admin-0 capital' || (city.properties.featurecla === 'Admin-1 capital' && show_admin1.includes(city.properties.adm0_a3))) {
+        const location = project(new LatLon(city.geometry.coordinates[1], city.geometry.coordinates[0]));
         const group = fCSVGE('g');
         const dot = fCSVGE('circle');
         dot.setAttribute('cx', location.x);
@@ -86,14 +88,14 @@ function drawCities() {
         dot.setAttribute('r', ((city.rank_max+6)/70).toString()+'px');
         group.appendChild(dot);
 
-        const l2 = project(new LatLon(city.coordinates[1], city.coordinates[0]+1));
+        const l2 = project(new LatLon(city.geometry.coordinates[1], city.geometry.coordinates[0]+1));
         const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
 
         const name = fCSVGE('text');
         name.setAttribute('x', location.x+.5);
         name.setAttribute('y', location.y+.3);
         name.setAttribute('transform', 'rotate(' + angle + ', ' + location.x +', ' + location.y + ')');
-        name.innerHTML = city.name;
+        name.innerHTML = city.properties.name;
         group.appendChild(name);
 
         fGID('cities').appendChild(group);
@@ -103,11 +105,9 @@ function drawCities() {
 }
 
 function drawCountries() {
-  getJson('ne-country-areas.json').then(countries => {
+  getJson('ne_10m_admin_0_countries_lakes.json').then(countries => {
     countries.forEach(country => {
-
-      const path = convertGeoJsonToSvgPath(country[1]);
-      path.id = 'iso-' + country[0];
+      const path = convertGeoJsonToSvgPath(country.geometry.coordinates);
       // path.onmouseover = () => {
       //   fGID('annotation').innerHTML = country[0];
       // };
@@ -133,11 +133,14 @@ function drawCountries() {
   });
 }
 
-function drawStates() {
-  getJson('ne_50m_admin_1_states_provinces_lakes.json').then(states => {
+function drawStateBoundaries() {
+  getJson('ne_10m_admin_1_states_provinces_lines.json').then(states => {
     states.forEach(state => {
-      const path = convertGeoJsonToSvgPath(state.coordinates);
-      fGID('states').appendChild(path);
+      const adm0 = state.properties.ADM0_A3;
+      if (show_admin1.includes(adm0)) {
+        const path = convertGeoJsonToSvgPath(state.geometry.coordinates);
+        fGID('stateboundaries').appendChild(path);
+      }
     });
   });
 }
@@ -145,10 +148,21 @@ function drawStates() {
 // ------------------------------------------------------------------
 
 function drawBoundaries() {
-  getJson('ne-boundaries.json').then(boundaries => {
+  // ['Disputed (please verify)', 'Indefinite (please verify)', 'Indeterminant frontier', 'International boundary (verify)', 'Lease limit', 'Line of control (please verify)', 'Overlay limit', 'Unrecognized']
+  getJson('ne_10m_admin_0_boundary_lines_land.json').then(boundaries => {
     boundaries.forEach(boundary => {
-      const path = convertGeoJsonToSvgPath(boundary[1]);
-      if (!boundary[0]) path.classList.add('disputed');
+      if (boundary.properties.FEATURECLA === 'Lease limit') return;
+      const path = convertGeoJsonToSvgPath(boundary.geometry.coordinates);
+      if (boundary.properties.FEATURECLA !== 'International boundary (verify)') path.classList.add('disputed');
+      //path.setAttribute('data', boundary.properties.ADM0_A3_R+'-'+boundary.properties.ADM0_A3_L);
+      // if (boundary.properties.FEATURECLA === 'Disputed (please verify)') {path.setAttribute('stroke', 'red');}
+      // if (boundary.properties.FEATURECLA === 'Indefinite (please verify)') {path.setAttribute('stroke', 'blue');}
+      // if (boundary.properties.FEATURECLA === 'Indeterminant frontier') {path.setAttribute('stroke', 'green');}
+      // if (boundary.properties.FEATURECLA === 'International boundary (verify)') {path.setAttribute('stroke', 'black');}
+      // if (boundary.properties.FEATURECLA === 'Lease limit') {path.setAttribute('stroke', 'purple');}
+      // if (boundary.properties.FEATURECLA === 'Line of control (please verify)') {path.setAttribute('stroke', 'orange');}
+      // if (boundary.properties.FEATURECLA === 'Overlay limit') {path.setAttribute('stroke', 'yellow');}
+      // if (boundary.properties.FEATURECLA === 'Unrecognized') {path.setAttribute('stroke', 'hotpink');}
       fGID('boundaries').appendChild(path);
     });
   });

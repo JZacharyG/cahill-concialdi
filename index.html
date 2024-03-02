@@ -20,6 +20,9 @@ svg, canvas {
 <body>
 
 <canvas></canvas>
+<!-- <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="-142 -45.5 302 178">
+ -->
 <svg>
   <style>
 #background {
@@ -79,7 +82,7 @@ svg, canvas {
     <path id="background" />
     <g id="circles"></g>
     <g id="countries"></g>
-    <g id="states"></g>
+    <g id="stateboundaries"></g>
     <g id="boundaries"></g>
     <g id="graticule"></g>
     <g id="cities"></g>
@@ -93,6 +96,7 @@ import { drawVectorMap } from './map-vector.mjs';
 import {
   drawRasterMap,
   RASTER_NE_I,
+  RASTER_NE_II,
   RASTER_NE_HYPSO,
   RASTER_NASA_BLUE,
   RASTER_NASA_BLACK,
@@ -102,7 +106,6 @@ import {
 } from './map-raster.mjs';
 
 drawVectorMap();
-drawRasterMap(RASTER_NE_I);
 
 // const c = document.getElementsByTagName("canvas")[0];
 // let canvasUrl = c.toDataURL("image/jpeg", 0.85);
@@ -111,6 +114,7 @@ drawRasterMap(RASTER_NE_I);
 // createEl.download = "cahill-concialdi";
 // createEl.click();
 // createEl.remove();
+//drawRasterMap(RASTER_NE_II);
 
 </script>
 </body>
