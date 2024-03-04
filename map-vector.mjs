@@ -30,7 +30,7 @@ export function drawVectorMap() {
   drawCountries();
   drawStateBoundaries();
   drawBoundaries();
-  // drawCities();
+  drawCities(false);
 }
 
 // ------------------------------------------------------------------
@@ -74,38 +74,41 @@ function convertPointListsToSvgPath(pointLists, isClosed) {
 
 // ------------------------------------------------------------------
 
-const show_admin1 = ['USA', 'AUS', 'CAN'];
+const show_admin1 = ['USA', 'AUS', 'CAN', 'MEX'];
 
-function drawCities() {
+function drawCities(labels = true) {
   getJson('ne_10m_populated_places_simple.json').then(cities => {
     cities.forEach(city => {
       if (city.properties.scalerank <= 2 || city.properties.featurecla === 'Admin-0 capital' || (city.properties.featurecla === 'Admin-1 capital' && show_admin1.includes(city.properties.adm0_a3))) {
         const location = project(new LatLon(city.geometry.coordinates[1], city.geometry.coordinates[0]));
-        const group = fCSVGE('g');
         const dot = fCSVGE('circle');
         dot.setAttribute('cx', location.x);
         dot.setAttribute('cy', location.y);
         //dot.setAttribute('r', ((city.rank_max+6)/70).toString()+'px');
         dot.setAttribute('r', '.1px');
-        group.appendChild(dot);
 
-        const l2 = project(new LatLon(city.geometry.coordinates[1], city.geometry.coordinates[0]+1));
-        const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
+        if (labels) {
+          const l2 = project(new LatLon(city.geometry.coordinates[1], city.geometry.coordinates[0]+1));
+          const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
+          const group = fCSVGE('g');
+          const name = fCSVGE('text');
+          name.setAttribute('x', location.x+.5);
+          name.setAttribute('y', location.y+.3);
+          name.setAttribute('transform', 'rotate(' + angle + ', ' + location.x +', ' + location.y + ')');
+          name.innerHTML = city.properties.name;
 
-        const name = fCSVGE('text');
-        name.setAttribute('x', location.x+.5);
-        name.setAttribute('y', location.y+.3);
-        name.setAttribute('transform', 'rotate(' + angle + ', ' + location.x +', ' + location.y + ')');
-        name.innerHTML = city.properties.name;
-        group.appendChild(name);
-
-        fGID('cities').appendChild(group);
+          group.appendChild(dot);
+          group.appendChild(name);
+          fGID('cities').appendChild(group);
+        } else {
+          fGID('cities').appendChild(dot);
+        }
       }
     });
   });
 }
 
-function drawCountries() {
+function drawCountries(labels = true) {
   getJson('ne_10m_admin_0_countries_lakes.json').then(countries => {
     countries.forEach(country => {
       const path = convertGeoJsonToSvgPath(country.geometry.coordinates);
@@ -131,6 +134,26 @@ function drawCountries() {
       // path.setAttribute('stroke', rgb);
 
       fGID('countries').appendChild(path);
+
+      const location = project(new LatLon(country.properties.LABEL_Y, country.properties.LABEL_X));
+
+      const l2 = project(new LatLon(country.properties.LABEL_Y, country.properties.LABEL_X+1));
+      const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
+
+      // const dot = fCSVGE('circle');
+      // dot.setAttribute('cx', location.x);
+      // dot.setAttribute('cy', location.y);
+      // dot.setAttribute('r', '.1px');
+      // fGID('labels').appendChild(dot);
+      if (labels) {
+        const name = fCSVGE('text');
+        name.setAttribute('x', location.x);
+        name.setAttribute('y', location.y+.3);
+        name.setAttribute('transform', 'rotate(' + (angle-country.properties.LABEL_ANGLE) + ', ' + location.x +', ' + location.y + ')');
+        name.innerHTML = country.properties.NAME;
+
+        fGID('labels').appendChild(name);
+      }
     });
   });
 }
