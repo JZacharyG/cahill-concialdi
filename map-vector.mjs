@@ -25,12 +25,12 @@ export function initVectorMap() {
 export function drawVectorMap() {
   initVectorMap();
   drawBackground();
-  drawGraticule(2);
+  drawGraticule(5);
   drawSpecialCircles();
   drawCountries();
-  //drawBoundaries();
-  drawCities();
   drawStateBoundaries();
+  drawBoundaries();
+  // drawCities();
 }
 
 // ------------------------------------------------------------------
@@ -85,7 +85,8 @@ function drawCities() {
         const dot = fCSVGE('circle');
         dot.setAttribute('cx', location.x);
         dot.setAttribute('cy', location.y);
-        dot.setAttribute('r', ((city.rank_max+6)/70).toString()+'px');
+        //dot.setAttribute('r', ((city.rank_max+6)/70).toString()+'px');
+        dot.setAttribute('r', '.1px');
         group.appendChild(dot);
 
         const l2 = project(new LatLon(city.geometry.coordinates[1], city.geometry.coordinates[0]+1));
@@ -108,6 +109,7 @@ function drawCountries() {
   getJson('ne_10m_admin_0_countries_lakes.json').then(countries => {
     countries.forEach(country => {
       const path = convertGeoJsonToSvgPath(country.geometry.coordinates);
+      path.classList.add("c"+country.properties.MAPCOLOR7);
       // path.onmouseover = () => {
       //   fGID('annotation').innerHTML = country[0];
       // };
@@ -217,7 +219,7 @@ export function drawGraticule(interval = DEFAULT_INTERVAL) {
       lon += interval
     ) {
       points = [];
-      for (let lat = area.swCorner.lat; lat <= area.neCorner.lat; lat++) {
+      for (let lat = Math.max(lon%10===0?(lon%20===0?-90:-85):-80, area.swCorner.lat); lat <= Math.min(lon%10===0?(lon%20===0?90:85):80, area.neCorner.lat); lat++) {
         points.push(project(new LatLon(lat, lon), idx));
       }
       pointLists.push(points);

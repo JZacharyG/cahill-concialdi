@@ -26,21 +26,22 @@ svg, canvas {
 <svg>
   <style>
 #background {
-  fill: hsl(210,56%,66%);
+  fill: skyblue;
   stroke: none;
 }
 
 #graticule {
   fill: none;
-  stroke-width: 0.15;
-  stroke-opacity: .05;
+  stroke-width: 0.03;
+  stroke-opacity: .2;
   stroke: #000;
 }
 
 #circles {
   fill: none;
-  stroke-width: 0.3;
-  stroke: hsl(210,56%,50%);
+  stroke-width: 0.03;
+  stroke-opacity: .3;
+  stroke: #000;
 }
 
 .polar-tropic {
@@ -48,34 +49,62 @@ svg, canvas {
 }
 
 #countries {
-  stroke-width: 0.1;
+  stroke-width: 0.015;
   stroke-linejoin: round;
   fill: hsl(97,43%,50%);
-  stroke: hsl(97,43%,25%);
+  stroke: #000;
+
 }
 
-#states {
-  stroke-width: 0.025;
+#countries .c1 {
+  fill: orangered;
+}
+
+#countries .c2 {
+  fill: sienna;
+}
+
+#countries .c3 {
+  fill: goldenrod;
+}
+
+#countries .c4 {
+  fill: green;
+}
+
+#countries .c5 {
+  fill: blueviolet;
+}
+
+#countries .c6 {
+  fill: mediumvioletred;
+}
+
+#countries .c7 {
+  fill: lightgray;
+}
+
+#stateboundaries {
+  stroke-width: 0.03;
   stroke-linejoin: round;
   fill: none;
-  stroke: hsl(97,43%,25%);
+  stroke: #000;
 }
 
 #boundaries {
   fill: none;
-  stroke: none;
-  stroke-width: 0.1;
+  stroke: #000;
+  stroke-width: 0.05;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
 #boundaries path.disputed {
-  stroke-dasharray: 0.2 0.5;
-  stroke: hsl(97,43%,50%);
+  stroke-dasharray: 0.4 0.2;
 }
 
 #cities text {
-  font-size: 1px;
+  font-size: .75px;
 }
   </style>
   <g id="svg-map-wrapper">
