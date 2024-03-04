@@ -143,6 +143,13 @@ function drawStateBoundaries() {
       }
     });
   });
+  getJson('ne_10m_admin_0_boundary_lines_map_units_UK.json').then(states => {
+    states.forEach(state => {
+      const path = convertGeoJsonToSvgPath([state.geometry.coordinates]);
+      //path.setAttribute('data', state.properties.NAME);
+      fGID('stateboundaries').appendChild(path);
+    });
+  });
 }
 
 // ------------------------------------------------------------------
