@@ -25,7 +25,7 @@ export function initVectorMap() {
 export function drawVectorMap() {
   initVectorMap();
   drawBackground();
-  drawGraticule(5);
+  drawGraticule(1);
   drawSpecialCircles();
   drawCountries();
   drawStateBoundaries();
@@ -75,11 +75,12 @@ function convertPointListsToSvgPath(pointLists, isClosed) {
 // ------------------------------------------------------------------
 
 const show_admin1 = ['USA', 'AUS', 'CAN', 'MEX'];
+const show_admin1_capitals = ['USA', 'AUS', 'CAN'];
 
 function drawCities(labels = true) {
   getJson('ne_10m_populated_places_simple.json').then(cities => {
     cities.forEach(city => {
-      if (city.properties.scalerank <= 2 || city.properties.featurecla === 'Admin-0 capital' || (city.properties.featurecla === 'Admin-1 capital' && show_admin1.includes(city.properties.adm0_a3))) {
+      if (city.properties.scalerank <= 2 || city.properties.featurecla === 'Admin-0 capital' || (city.properties.featurecla === 'Admin-1 capital' && show_admin1_capitals.includes(city.properties.adm0_a3))) {
         const location = project(new LatLon(city.geometry.coordinates[1], city.geometry.coordinates[0]));
         const dot = fCSVGE('circle');
         dot.setAttribute('cx', location.x);
@@ -145,11 +146,13 @@ function drawCountries(labels = true) {
       // dot.setAttribute('cy', location.y);
       // dot.setAttribute('r', '.1px');
       // fGID('labels').appendChild(dot);
-      if (labels) {
+      if (labels && ['Sovereign country', 'Country', 'Sovereignty', 'Disputed'].includes(country.properties.TYPE)) {
         const name = fCSVGE('text');
         name.setAttribute('x', location.x);
         name.setAttribute('y', location.y+.3);
         name.setAttribute('transform', 'rotate(' + (angle-country.properties.LABEL_ANGLE) + ', ' + location.x +', ' + location.y + ')');
+        // name.classList.add('s'+country.properties.LABEL_SIZE);
+        name.setAttribute('style','font-size:' + (country.properties.LABEL_SIZE/100) + 'px;');
         name.innerHTML = country.properties.NAME;
 
         fGID('labels').appendChild(name);
