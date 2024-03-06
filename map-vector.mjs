@@ -76,7 +76,7 @@ function convertPointListsToSvgPath(pointLists, isClosed) {
 
 const show_admin1 = ['USA', 'AUS', 'CAN', 'MEX'];
 const show_admin1_capitals = ['USA', 'AUS', 'CAN'];
-const hide_admin0_capital = ['SVN','HRV', 'ALB', 'BIH', 'MNE', 'KOS', 'MKD', 'LIE', 'ATG', 'KNA', 'LCA', 'DMA', 'VCT', 'BRB', 'GRD'];
+const hide_admin0_capital = ['SVN','HRV', 'ALB', 'BIH', 'MNE', 'KOS', 'MKD', 'LIE', 'ATG', 'KNA', 'LCA', 'DMA', 'VCT', 'BRB', 'GRD', 'CYP', 'MLT', 'MUS', 'SYC', 'COM'];
 function drawCities(labels = true) {
   getJson('ne_10m_populated_places_simple.json').then(cities => {
     cities.forEach(city => {
