@@ -16,7 +16,7 @@ const NUM_CANVAS_DATA_CHANNELS = 4;
 
 // Filenames of the source raster maps in plate carrée projection.
 const NE_I_FILENAME       = 'ne-i.jpg';
-const NE_II_FILENAME      = 'ne-ii-large-recolored2.png';
+const NE_II_FILENAME      = 'ne-ii-large-recolored.png';
 const NE_HYPSO_FILENAME   = 'ne-hypso.jpg';
 const NASA_BLUE_FILENAME  = 'nasa-blue-marble-ng.jpg';
 const NASA_BLACK_FILENAME = 'nasa-black-marble.jpg';
