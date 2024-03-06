@@ -76,11 +76,11 @@ function convertPointListsToSvgPath(pointLists, isClosed) {
 
 const show_admin1 = ['USA', 'AUS', 'CAN', 'MEX'];
 const show_admin1_capitals = ['USA', 'AUS', 'CAN'];
-
+const hide_admin0_capital = ['SVN','HRV', 'ALB', 'BIH', 'MNE', 'KOS', 'MKD', 'LIE', 'ATG', 'KNA', 'LCA', 'DMA', 'VCT', 'BRB', 'GRD'];
 function drawCities(labels = true) {
   getJson('ne_10m_populated_places_simple.json').then(cities => {
     cities.forEach(city => {
-      if (city.properties.scalerank <= 2 || city.properties.featurecla === 'Admin-0 capital' || (city.properties.featurecla === 'Admin-1 capital' && show_admin1_capitals.includes(city.properties.adm0_a3))) {
+      if (city.properties.scalerank <= 2 || (city.properties.featurecla === 'Admin-0 capital' && !hide_admin0_capital.includes(city.properties.adm0_a3)) || (city.properties.featurecla === 'Admin-1 capital' && show_admin1_capitals.includes(city.properties.adm0_a3))) {
         const location = project(new LatLon(city.geometry.coordinates[1], city.geometry.coordinates[0]));
         const dot = fCSVGE('circle');
         dot.setAttribute('cx', location.x);
