@@ -95,9 +95,26 @@ function drawCities(labels = true) {
           const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
           const group = fCSVGE('g');
           const name = fCSVGE('text');
-          name.setAttribute('x', location.x+.5);
-          name.setAttribute('y', location.y+.3);
-          name.setAttribute('transform', 'rotate(' + angle + ', ' + location.x +', ' + location.y + ')');
+          const label_anchor = city.properties.label_anchor;
+
+          switch (label_anchor) {
+            case 'E':
+              name.setAttribute('x', location.x + city.properties.label_dx + 0.3);
+              name.setAttribute('y', location.y - city.properties.label_dy + 0.3);
+              break;
+            case 'W':
+              name.setAttribute('x', location.x + city.properties.label_dx - 0.3);
+              name.setAttribute('y', location.y - city.properties.label_dy + 0.3);
+              name.classList.add('right-align');
+              break;
+            case 'N':
+              name.setAttribute('x', location.x + city.properties.label_dx);
+              name.setAttribute('y', location.y - city.properties.label_dy - 0.3);
+              name.classList.add('center-align');
+              break;
+          }
+
+          name.setAttribute('transform', 'rotate(' + (angle - city.properties.label_angle) + ', ' + location.x +', ' + location.y + ')');
           name.innerHTML = city.properties.name;
 
           group.appendChild(dot);
