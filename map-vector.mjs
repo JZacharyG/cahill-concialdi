@@ -29,8 +29,9 @@ export function drawVectorMap() {
   drawSpecialCircles();
   drawCountries();
   drawStateBoundaries();
+  drawStateLabels();
   drawBoundaries();
-  drawCities(false);
+  drawCities(true);
 }
 
 // ------------------------------------------------------------------
@@ -75,12 +76,13 @@ function convertPointListsToSvgPath(pointLists, isClosed) {
 // ------------------------------------------------------------------
 
 const show_admin1 = ['USA', 'AUS', 'CAN', 'MEX'];
-const show_admin1_capitals = ['USA', 'AUS', 'CAN'];
+const show_admin1_details = ['USA', 'AUS', 'CAN'];
 const hide_admin0_capital = ['SVN','HRV', 'ALB', 'BIH', 'MNE', 'KOS', 'MKD', 'LIE', 'ATG', 'KNA', 'LCA', 'DMA', 'VCT', 'BRB', 'GRD', 'CYP', 'MLT', 'MUS', 'SYC', 'COM'];
+
 function drawCities(labels = true) {
   getJson('ne_10m_populated_places_simple.json').then(cities => {
     cities.forEach(city => {
-      if (city.properties.scalerank <= 2 || (city.properties.featurecla === 'Admin-0 capital' && !hide_admin0_capital.includes(city.properties.adm0_a3)) || (city.properties.featurecla === 'Admin-1 capital' && show_admin1_capitals.includes(city.properties.adm0_a3))) {
+      if (city.properties.scalerank <= 2 || (city.properties.featurecla === 'Admin-0 capital' && !hide_admin0_capital.includes(city.properties.adm0_a3)) || (city.properties.featurecla === 'Admin-1 capital' && show_admin1_details.includes(city.properties.adm0_a3))) {
         const location = project(new LatLon(city.geometry.coordinates[1], city.geometry.coordinates[0]));
         const dot = fCSVGE('circle');
         dot.setAttribute('cx', location.x);
@@ -154,6 +156,29 @@ function drawCountries(labels = true) {
         // name.classList.add('s'+country.properties.LABEL_SIZE);
         name.setAttribute('style','font-size:' + (country.properties.LABEL_SIZE/100) + 'px;');
         name.innerHTML = country.properties.NAME;
+
+        fGID('labels').appendChild(name);
+      }
+    });
+  });
+}
+
+function drawStateLabels() {
+  getJson('ne_10m_admin_1_states_provinces_lakes.json').then(states => {
+    states.forEach(state => {
+      const adm0 = state.properties.adm0_a3;
+      if (show_admin1_details.includes(adm0) && state.properties.name !== null) {
+        console.log(state.properties.name, state.properties.label_y, state.properties.label_x)
+        const location = project(new LatLon(state.properties.label_y, state.properties.label_x));
+        const l2 = project(new LatLon(state.properties.label_y, state.properties.label_x+1));
+        const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
+
+        const name = fCSVGE('text');
+        name.setAttribute('x', location.x);
+        name.setAttribute('y', location.y+.3);
+        name.setAttribute('transform', 'rotate(' + (angle-state.properties.label_angle) + ', ' + location.x +', ' + location.y + ')');
+        name.setAttribute('style','font-size:' + (state.properties.label_size/100) + 'px;');
+        name.innerHTML = state.properties.name;
 
         fGID('labels').appendChild(name);
       }
