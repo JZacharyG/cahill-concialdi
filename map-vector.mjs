@@ -139,45 +139,45 @@ function drawCountries(regions = true, labels = true) {
     countries.forEach(country => {
       if (regions) {
         const path = convertGeoJsonToSvgPath(country.geometry.coordinates);
-        path.classList.add("c"+country.properties.MAPCOLOR7);
+        path.classList.add("c"+country.properties.mapcolor7);
         fGID('countries').appendChild(path);
       }
 
-      if (labels && ['Sovereign country', 'Country', 'Sovereignty', 'Disputed'].includes(country.properties.TYPE) || ['ATA', 'SAH'].includes(country.properties.ADM0_A3)) {
-        const location = project(new LatLon(country.properties.LABEL_Y, country.properties.LABEL_X));
-        const l2 = project(new LatLon(country.properties.LABEL_Y, country.properties.LABEL_X+1));
+      if (labels && ['Sovereign country', 'Country', 'Sovereignty', 'Disputed'].includes(country.properties.type) || ['ATA', 'SAH'].includes(country.properties.adm0_a3)) {
+        const location = project(new LatLon(country.properties.label_y, country.properties.label_x));
+        const l2 = project(new LatLon(country.properties.label_y, country.properties.label_x+1));
         const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
 
-        if (country.properties.LABEL_BEND_WIDTH !== undefined) {
+        if (country.properties.label_bend_width !== undefined) {
           let points = [];
-          const lat = country.properties.LABEL_Y;
+          const lat = country.properties.label_y;
           for (
-            let lon = country.properties.LABEL_X - country.properties.LABEL_BEND_WIDTH;
-            lon <= country.properties.LABEL_X + country.properties.LABEL_BEND_WIDTH;
+            let lon = country.properties.label_x - country.properties.label_bend_width;
+            lon <= country.properties.label_x + country.properties.label_bend_width;
             lon += 0.5
           ) {
             points.push(project(new LatLon(lat,lon)));
           }
           const name_path = convertPointListsToSvgPath([points], false);
-          name_path.setAttribute('id', country.properties.ADM0_A3+'-label-path');
+          name_path.setAttribute('id', country.properties.adm0_a3+'-label-path');
           fGID('defs').appendChild(name_path);
 
           const name = fCSVGE('text');
-          name.setAttribute('style','font-size:' + (country.properties.LABEL_SIZE/100) + 'px;');
+          name.setAttribute('style','font-size:' + (country.properties.label_size/100) + 'px;');
           const name_inner = fCSVGE('textPath');
-          name_inner.setAttribute('href', '#'+country.properties.ADM0_A3+'-label-path');
-          name_inner.innerHTML = country.properties.NAME;
+          name_inner.setAttribute('href', '#'+country.properties.adm0_a3+'-label-path');
+          name_inner.innerHTML = country.properties.name;
           name_inner.setAttribute('startOffset', '50%');
           name.appendChild(name_inner);
           fGID('country-labels').appendChild(name);
         } else {
-          country.properties.NAME.split('\n').forEach((line, idx) => {
+          country.properties.name.split('\n').forEach((line, idx) => {
             const name = fCSVGE('text');
             name.setAttribute('x', location.x);
-            name.setAttribute('y', location.y + .3 + idx*country.properties.LABEL_SIZE/100);
-            name.setAttribute('transform', 'rotate(' + (angle-country.properties.LABEL_ANGLE) + ', ' + location.x +', ' + location.y + ')');
-            // name.classList.add('s'+country.properties.LABEL_SIZE);
-            name.setAttribute('style','font-size:' + (country.properties.LABEL_SIZE/100) + 'px;');
+            name.setAttribute('y', location.y + .3 + idx*country.properties.label_size/100);
+            name.setAttribute('transform', 'rotate(' + (angle-country.properties.label_angle) + ', ' + location.x +', ' + location.y + ')');
+            // name.classList.add('s'+country.properties.label_size);
+            name.setAttribute('style','font-size:' + (country.properties.label_size/100) + 'px;');
             name.innerHTML = line;
 
             fGID('country-labels').appendChild(name);
@@ -217,7 +217,7 @@ function drawStateLabels() {
 function drawStateBoundaries() {
   getJson('ne_10m_admin_1_states_provinces_lines.json').then(states => {
     states.forEach(state => {
-      const adm0 = state.properties.ADM0_A3;
+      const adm0 = state.properties.adm0_a3;
       if (show_admin1.includes(adm0)) {
         const path = convertGeoJsonToSvgPath(state.geometry.coordinates);
         fGID('state-boundaries').appendChild(path);
@@ -227,7 +227,7 @@ function drawStateBoundaries() {
   getJson('ne_10m_admin_0_boundary_lines_map_units_UK.json').then(states => {
     states.forEach(state => {
       const path = convertGeoJsonToSvgPath([state.geometry.coordinates]);
-      //path.setAttribute('data', state.properties.NAME);
+      //path.setAttribute('data', state.properties.name);
       fGID('state-boundaries').appendChild(path);
     });
   });
@@ -249,18 +249,18 @@ function drawBoundaries() {
   // ['Disputed (please verify)', 'Indefinite (please verify)', 'Indeterminant frontier', 'International boundary (verify)', 'Lease limit', 'Line of control (please verify)', 'Overlay limit', 'Unrecognized']
   getJson('ne_10m_admin_0_boundary_lines_land.json').then(boundaries => {
     boundaries.forEach(boundary => {
-      if (boundary.properties.FEATURECLA === 'Lease limit' || boundary.properties.FEATURECLA === 'Overlay limit') return;
+      if (boundary.properties.featurecla === 'Lease limit' || boundary.properties.FEATURECLA === 'Overlay limit') return;
       const path = convertGeoJsonToSvgPath(boundary.geometry.coordinates);
-      if (boundary.properties.FEATURECLA !== 'International boundary (verify)') path.classList.add('disputed');
+      if (boundary.properties.featurecla !== 'International boundary (verify)') path.classList.add('disputed');
       //path.setAttribute('data', boundary.properties.ADM0_A3_R+'-'+boundary.properties.ADM0_A3_L);
-      // if (boundary.properties.FEATURECLA === 'Disputed (please verify)') {path.setAttribute('stroke', 'red');}
-      // if (boundary.properties.FEATURECLA === 'Indefinite (please verify)') {path.setAttribute('stroke', 'blue');}
-      // if (boundary.properties.FEATURECLA === 'Indeterminant frontier') {path.setAttribute('stroke', 'green');}
-      // if (boundary.properties.FEATURECLA === 'International boundary (verify)') {path.setAttribute('stroke', 'black');}
-      // if (boundary.properties.FEATURECLA === 'Lease limit') {path.setAttribute('stroke', 'purple');}
-      // if (boundary.properties.FEATURECLA === 'Line of control (please verify)') {path.setAttribute('stroke', 'orange');}
-      // if (boundary.properties.FEATURECLA === 'Overlay limit') {path.setAttribute('stroke', 'yellow');}
-      // if (boundary.properties.FEATURECLA === 'Unrecognized') {path.setAttribute('stroke', 'hotpink');}
+      // if (boundary.properties.featurecla === 'Disputed (please verify)') {path.setAttribute('stroke', 'red');}
+      // if (boundary.properties.featurecla === 'Indefinite (please verify)') {path.setAttribute('stroke', 'blue');}
+      // if (boundary.properties.featurecla === 'Indeterminant frontier') {path.setAttribute('stroke', 'green');}
+      // if (boundary.properties.featurecla === 'International boundary (verify)') {path.setAttribute('stroke', 'black');}
+      // if (boundary.properties.featurecla === 'Lease limit') {path.setAttribute('stroke', 'purple');}
+      // if (boundary.properties.featurecla === 'Line of control (please verify)') {path.setAttribute('stroke', 'orange');}
+      // if (boundary.properties.featurecla === 'Overlay limit') {path.setAttribute('stroke', 'yellow');}
+      // if (boundary.properties.featurecla === 'Unrecognized') {path.setAttribute('stroke', 'hotpink');}
       fGID('boundaries').appendChild(path);
     });
   });
