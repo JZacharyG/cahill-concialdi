@@ -25,13 +25,14 @@ export function initVectorMap() {
 export function drawVectorMap() {
   initVectorMap();
   drawBackground();
-  drawGraticule(1);
+  drawGraticule(5);
   drawSpecialCircles();
-  drawCountries();
+  drawCountries(true, true);
   drawStateBoundaries();
   drawStateLabels();
   drawBoundaries();
   drawCities(true);
+  //drawCoastline();
 }
 
 // ------------------------------------------------------------------
@@ -75,7 +76,7 @@ function convertPointListsToSvgPath(pointLists, isClosed) {
 
 // ------------------------------------------------------------------
 
-const show_admin1 = ['USA', 'AUS', 'CAN', 'MEX'];
+const show_admin1 = ['USA', 'AUS', 'CAN'];//, 'MEX', 'BRA', 'RUS'];
 const show_admin1_details = ['USA', 'AUS', 'CAN'];
 const hide_admin0_capital = ['SVN','HRV', 'ALB', 'BIH', 'MNE', 'KOS', 'MKD', 'LIE', 'ATG', 'KNA', 'LCA', 'DMA', 'VCT', 'BRB', 'GRD', 'CYP', 'MLT', 'MUS', 'SYC', 'COM'];
 
@@ -99,17 +100,22 @@ function drawCities(labels = true) {
 
           switch (label_anchor) {
             case 'E':
-              name.setAttribute('x', location.x + city.properties.label_dx + 0.3);
-              name.setAttribute('y', location.y - city.properties.label_dy + 0.3);
+              name.setAttribute('x', location.x + city.properties.label_dx + 0.25);
+              name.setAttribute('y', location.y - city.properties.label_dy + 0.15);
               break;
             case 'W':
-              name.setAttribute('x', location.x + city.properties.label_dx - 0.3);
-              name.setAttribute('y', location.y - city.properties.label_dy + 0.3);
+              name.setAttribute('x', location.x + city.properties.label_dx - 0.25);
+              name.setAttribute('y', location.y - city.properties.label_dy + 0.15);
               name.classList.add('right-align');
               break;
             case 'N':
               name.setAttribute('x', location.x + city.properties.label_dx);
-              name.setAttribute('y', location.y - city.properties.label_dy - 0.3);
+              name.setAttribute('y', location.y - city.properties.label_dy - 0.2);
+              name.classList.add('center-align');
+              break;
+            case 'S':
+              name.setAttribute('x', location.x + city.properties.label_dx);
+              name.setAttribute('y', location.y - city.properties.label_dy + 0.5);
               name.classList.add('center-align');
               break;
           }
@@ -128,53 +134,55 @@ function drawCities(labels = true) {
   });
 }
 
-function drawCountries(labels = true) {
+function drawCountries(regions = true, labels = true) {
   getJson('ne_10m_admin_0_countries_lakes.json').then(countries => {
     countries.forEach(country => {
-      const path = convertGeoJsonToSvgPath(country.geometry.coordinates);
-      path.classList.add("c"+country.properties.MAPCOLOR7);
-      // path.onmouseover = () => {
-      //   fGID('annotation').innerHTML = country[0];
-      // };
+      if (regions) {
+        const path = convertGeoJsonToSvgPath(country.geometry.coordinates);
+        path.classList.add("c"+country.properties.MAPCOLOR7);
+        fGID('countries').appendChild(path);
+      }
 
-      // // Compute fill color based on the country's position
-      // // where the average of the country's coordinates is a proxy for position
-      // const flatLonLatList = [].concat(...[].concat(...country[1]));
-      // const numCoords = flatLonLatList.length;
-      // const sumLat = flatLonLatList.reduce((sum, lonLat) => sum + lonLat[1], 0);
-      // const sumLon = flatLonLatList.reduce((sum, lonLat) => sum + lonLat[0], 0);
-      // let red   = MAX_COLOR_VALUE/2 * (1 + sumLat / numCoords / (DEGS_IN_CIRCLE/4));
-      // let green = MAX_COLOR_VALUE/2 * (1 + sumLon / numCoords / (DEGS_IN_CIRCLE/2));
-      // let blue  = MAX_COLOR_VALUE - (red + green)/2;
-      // red   = Math.min(MAX_COLOR_VALUE, red  *1.25);
-      // green = Math.min(MAX_COLOR_VALUE, green*1.25);
-      // blue  = Math.min(MAX_COLOR_VALUE, blue *1.25);
-      // const rgb = `rgb(${red},${green},${blue})`;
-      // path.setAttribute('fill'  , rgb);
-      // path.setAttribute('stroke', rgb);
+      if (labels && ['Sovereign country', 'Country', 'Sovereignty', 'Disputed'].includes(country.properties.TYPE) || ['ATA', 'SAH'].includes(country.properties.ADM0_A3)) {
+        const location = project(new LatLon(country.properties.LABEL_Y, country.properties.LABEL_X));
+        const l2 = project(new LatLon(country.properties.LABEL_Y, country.properties.LABEL_X+1));
+        const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
 
-      fGID('countries').appendChild(path);
+        if (country.properties.LABEL_BEND_WIDTH !== undefined) {
+          let points = [];
+          const lat = country.properties.LABEL_Y;
+          for (
+            let lon = country.properties.LABEL_X - country.properties.LABEL_BEND_WIDTH;
+            lon <= country.properties.LABEL_X + country.properties.LABEL_BEND_WIDTH;
+            lon += 0.5
+          ) {
+            points.push(project(new LatLon(lat,lon)));
+          }
+          const name_path = convertPointListsToSvgPath([points], false);
+          name_path.setAttribute('id', country.properties.ADM0_A3+'-label-path');
+          fGID('defs').appendChild(name_path);
 
-      const location = project(new LatLon(country.properties.LABEL_Y, country.properties.LABEL_X));
+          const name = fCSVGE('text');
+          name.setAttribute('style','font-size:' + (country.properties.LABEL_SIZE/100) + 'px;');
+          const name_inner = fCSVGE('textPath');
+          name_inner.setAttribute('href', '#'+country.properties.ADM0_A3+'-label-path');
+          name_inner.innerHTML = country.properties.NAME;
+          name_inner.setAttribute('startOffset', '50%');
+          name.appendChild(name_inner);
+          fGID('country-labels').appendChild(name);
+        } else {
+          country.properties.NAME.split('\n').forEach((line, idx) => {
+            const name = fCSVGE('text');
+            name.setAttribute('x', location.x);
+            name.setAttribute('y', location.y + .3 + idx*country.properties.LABEL_SIZE/100);
+            name.setAttribute('transform', 'rotate(' + (angle-country.properties.LABEL_ANGLE) + ', ' + location.x +', ' + location.y + ')');
+            // name.classList.add('s'+country.properties.LABEL_SIZE);
+            name.setAttribute('style','font-size:' + (country.properties.LABEL_SIZE/100) + 'px;');
+            name.innerHTML = line;
 
-      const l2 = project(new LatLon(country.properties.LABEL_Y, country.properties.LABEL_X+1));
-      const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
-
-      // const dot = fCSVGE('circle');
-      // dot.setAttribute('cx', location.x);
-      // dot.setAttribute('cy', location.y);
-      // dot.setAttribute('r', '.1px');
-      // fGID('labels').appendChild(dot);
-      if (labels && ['Sovereign country', 'Country', 'Sovereignty', 'Disputed'].includes(country.properties.TYPE)) {
-        const name = fCSVGE('text');
-        name.setAttribute('x', location.x);
-        name.setAttribute('y', location.y+.3);
-        name.setAttribute('transform', 'rotate(' + (angle-country.properties.LABEL_ANGLE) + ', ' + location.x +', ' + location.y + ')');
-        // name.classList.add('s'+country.properties.LABEL_SIZE);
-        name.setAttribute('style','font-size:' + (country.properties.LABEL_SIZE/100) + 'px;');
-        name.innerHTML = country.properties.NAME;
-
-        fGID('labels').appendChild(name);
+            fGID('country-labels').appendChild(name);
+          });
+        }
       }
     });
   });
@@ -184,20 +192,23 @@ function drawStateLabels() {
   getJson('ne_10m_admin_1_states_provinces_lakes.json').then(states => {
     states.forEach(state => {
       const adm0 = state.properties.adm0_a3;
-      if (show_admin1_details.includes(adm0) && state.properties.name !== null) {
-        console.log(state.properties.name, state.properties.label_y, state.properties.label_x)
+      // (special case for including the Azores)
+      if (show_admin1_details.includes(adm0) && state.properties.name !== null || state.properties.code_hasc === 'PT.AC') {
         const location = project(new LatLon(state.properties.label_y, state.properties.label_x));
         const l2 = project(new LatLon(state.properties.label_y, state.properties.label_x+1));
         const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
 
-        const name = fCSVGE('text');
-        name.setAttribute('x', location.x);
-        name.setAttribute('y', location.y+.3);
-        name.setAttribute('transform', 'rotate(' + (angle-state.properties.label_angle) + ', ' + location.x +', ' + location.y + ')');
-        name.setAttribute('style','font-size:' + (state.properties.label_size/100) + 'px;');
-        name.innerHTML = state.properties.name;
+        const name = (adm0 === 'USA'?state.properties.postal:state.properties.name);
+        name.split('\n').forEach((line, idx) => {
+          const label = fCSVGE('text');
+          label.setAttribute('x', location.x);
+          label.setAttribute('y', location.y+0.75*.3+idx*0.75*state.properties.label_size/100);
+          label.setAttribute('transform', 'rotate(' + (angle - state.properties.label_angle) + ', ' + location.x +', ' + location.y + ')');
+          label.setAttribute('style','font-size:' + (0.75*state.properties.label_size/100) + 'px;');
+          label.innerHTML = line;
 
-        fGID('labels').appendChild(name);
+          fGID('state-labels').appendChild(label);
+        });
       }
     });
   });
@@ -223,6 +234,16 @@ function drawStateBoundaries() {
 }
 
 // ------------------------------------------------------------------
+
+function drawCoastline() {
+  getJson('ne_10m_coastline.json').then(components => {
+    components.forEach(component => {
+      const path = convertGeoJsonToSvgPath(component.geometry.coordinates);
+      fGID('coastline').appendChild(path);
+    });
+  });
+}
+
 
 function drawBoundaries() {
   // ['Disputed (please verify)', 'Indefinite (please verify)', 'Indeterminant frontier', 'International boundary (verify)', 'Lease limit', 'Line of control (please verify)', 'Overlay limit', 'Unrecognized']

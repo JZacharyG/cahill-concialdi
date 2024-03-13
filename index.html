@@ -90,7 +90,7 @@ svg, canvas {
 }
 
 #countries .c5 {
-  fill: #5E30EB; /* darkblueish */
+  fill: #6C43F3; /* darkblueish */
 }
 
 #countries .c6 {
@@ -101,7 +101,7 @@ svg, canvas {
   fill: lightgray;
 }
 
-#state-boundaries {
+#state-boundaries, #coastline {
   stroke-width: 0.03;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -118,11 +118,24 @@ svg, canvas {
 }
 
 #boundaries path.disputed {
-  stroke-dasharray: 0.4 0.2;
+  stroke: red;
+  /* stroke-dasharray: 0.4 0.2; */
+}
+#country-labels {
+  text-anchor: middle;
+  font-size: 1px;
+  /* text-transform: uppercase; */
+  font-weight: bold;
+}
+
+#state-labels {
+  text-anchor: middle;
+  font-size: .75px;
+  font-variant-caps: small-caps;
 }
 
 #cities {
-  font-size: .75px;
+  font-size: .5px;
 }
 
 .center-align {
@@ -132,22 +145,20 @@ svg, canvas {
 .right-align {
   text-anchor: end;
 }
-
-#labels {
-  text-anchor: middle;
-  font-size: 1px;
-}
-  </style>
+</style>
   <g id="svg-map-wrapper">
+    <defs id="defs"></defs>
     <path id="background" />
     <g id="equator-mask"></g>
     <g id="countries"></g>
     <g id="state-boundaries"></g>
     <g id="boundaries"></g>
+    <g id="coastline"></g>
     <g id="graticule">
     <g id="circles"></g></g>
     <g id="cities"></g>
-    <g id="labels"></g>
+    <g id="state-labels"></g>
+    <g id="country-labels"></g>
   </g>
 </svg>
 <script>
