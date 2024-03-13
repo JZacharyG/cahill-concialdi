@@ -31,6 +31,7 @@ export function drawVectorMap() {
   drawStateBoundaries();
   drawStateLabels();
   drawBoundaries();
+  drawDisputedBoundaries();
   drawCities(true);
   //drawCoastline();
 }
@@ -249,7 +250,7 @@ function drawBoundaries() {
   // ['Disputed (please verify)', 'Indefinite (please verify)', 'Indeterminant frontier', 'International boundary (verify)', 'Lease limit', 'Line of control (please verify)', 'Overlay limit', 'Unrecognized']
   getJson('ne_10m_admin_0_boundary_lines_land.json').then(boundaries => {
     boundaries.forEach(boundary => {
-      if (boundary.properties.featurecla === 'Lease limit' || boundary.properties.FEATURECLA === 'Overlay limit') return;
+      if (['Lease limit', 'Overlay limit'].includes(boundary.properties.featurecla)) return;
       const path = convertGeoJsonToSvgPath(boundary.geometry.coordinates);
       if (boundary.properties.featurecla !== 'International boundary (verify)') path.classList.add('disputed');
       //path.setAttribute('data', boundary.properties.ADM0_A3_R+'-'+boundary.properties.ADM0_A3_L);
@@ -265,6 +266,18 @@ function drawBoundaries() {
     });
   });
 }
+
+function drawDisputedBoundaries() {
+  getJson('ne_10m_admin_0_boundary_lines_disputed_areas.json').then(boundaries => {
+    boundaries.forEach(boundary => {
+      if ([].includes(boundary.properties.featurecla)) return;
+      const path = convertGeoJsonToSvgPath(boundary.geometry.coordinates);
+      path.classList.add('disputed');
+      fGID('boundaries').appendChild(path);
+    });
+  });
+}
+
 
 // ------------------------------------------------------------------
 
