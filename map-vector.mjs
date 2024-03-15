@@ -245,6 +245,27 @@ function drawStateLabels() {
       }
     });
   });
+  getJson('ne_10m_admin_0_map_units_UK.json').then(states => {
+    states.forEach(state => {
+      if (state.properties.type !== 'Geo unit') return;
+      const location = project(new LatLon(state.properties.label_y, state.properties.label_x));
+      const l2 = project(new LatLon(state.properties.label_y, state.properties.label_x+1));
+      const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
+
+      const name = state.properties.name;
+      name.split('\n').forEach((line, idx) => {
+        const label = fCSVGE('text');
+        label.setAttribute('x', location.x);
+        label.setAttribute('y', location.y+0.75*.3+idx*0.75*state.properties.label_size/100);
+        label.setAttribute('transform', 'rotate(' + (angle - state.properties.label_angle) + ', ' + location.x +', ' + location.y + ')');
+        label.setAttribute('style','font-size:' + (0.75*state.properties.label_size/100) + 'px;');
+        label.innerHTML = line;
+
+        fGID('state-labels').appendChild(label);
+      });
+    });
+  });
+
 }
 
 function drawStateBoundaries() {
