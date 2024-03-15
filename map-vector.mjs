@@ -113,14 +113,16 @@ const hide_admin0_capital = [
 function drawCities(labels = true) {
   getJson('ne_10m_populated_places_simple.json').then(cities => {
     cities.forEach(city => {
-      if (['Singapore', 'Hong Kong', 'Washington, D.C.'].includes(city.properties.name)) return; // could handle this better...
+      if (['Singapore', 'Hong Kong'].includes(city.properties.name)) return; // could handle this better...
       if (city.properties.min_zoom <= 4 || (city.properties.featurecla === 'Admin-0 capital' && !hide_admin0_capital.includes(city.properties.adm0_a3)) || (city.properties.featurecla === 'Admin-1 capital' && show_admin1_details.includes(city.properties.adm0_a3))) {
         const location = project(new LatLon(city.geometry.coordinates[1], city.geometry.coordinates[0]));
         const dot = fCSVGE('circle');
         dot.setAttribute('cx', location.x);
         dot.setAttribute('cy', location.y);
         //dot.setAttribute('r', ((city.rank_max+6)/70).toString()+'px');
-        dot.setAttribute('r', '.1px');
+        // dot.setAttribute('r', '.1px');
+        if (city.properties.featurecla === 'Admin-0 capital')
+          dot.classList.add('capital');
 
         if (labels) {
           const l2 = project(new LatLon(city.geometry.coordinates[1], city.geometry.coordinates[0]+1));
@@ -229,6 +231,7 @@ function drawStateLabels() {
     states.forEach(state => {
       const adm0 = state.properties.adm0_a3;
       if (adm0 === 'AUS' && state.properties.type !== 'State') return;
+      if (state.properties.postal === 'DC') return;
       // (special case for including the Azores)
       if (show_admin1_details.includes(adm0) && state.properties.name !== null || state.properties.code_hasc === 'PT.AC') {
         const location = project(new LatLon(state.properties.label_y, state.properties.label_x));
