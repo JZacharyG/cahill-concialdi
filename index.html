@@ -19,33 +19,32 @@ svg, canvas {
 <body>
 
 <canvas></canvas>
-<!-- <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="-142 -45.5 302 178">
- -->
-<svg>
+<!-- <?xml version="1.0" encoding="UTF-8" standalone="no"?> -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg">
   <style>
 @font-face {
   font-family: 'Andika';
   src: url(Andika-Regular.woff2) format('woff2');
   font-feature-settings:
-    "cv04" 1, /* open 4 */
-    "cv06" 1, /* slanted stems on 6 and 9 */
-    "cv51" 1, /* q's tail */
-    "cv52" 1; /* Q's tail */
+    'cv04' 1, /* open 4 */
+    'cv06' 1, /* slanted stems on 6 and 9 */
+    'cv51' 1, /* q's tail */
+    'cv52' 1; /* Q's tail */
 }
 
 * {font-family: Andika;}
 
 #background {
-  fill: #00A1BE;
+  /* fill: #00A1BE; */
+  fill: skyblue;
   stroke: none;
 }
 
 #graticule {
   fill: none;
   stroke-width: 0.03;
-  opacity: .5;
-  stroke-opacity:.4;
+  opacity: 0.5;
+  stroke-opacity: 0.4;
   stroke: #000;
 }
 
@@ -57,7 +56,8 @@ svg, canvas {
 }
 
 #equator-mask {
-  stroke: #00A1BE;
+  /* stroke: #00A1BE; */
+  stroke: skyblue;
 }
 
 .polar-tropic {
@@ -68,8 +68,8 @@ svg, canvas {
 #countries {
   stroke-width: 0.015;
   stroke-linejoin: round;
-  fill: hsl(97,43%,50%);
-  stroke: #000;
+  fill: none;
+  stroke: #555;
 
 }
 
@@ -86,7 +86,7 @@ svg, canvas {
 }
 
 #countries .c4 {
-  fill: #E53B7A; /* reddish */
+  fill: #E53B57; /* reddish */
 }
 
 #countries .c5 {
@@ -106,12 +106,12 @@ svg, canvas {
   stroke-linejoin: round;
   stroke-linecap: round;
   fill: none;
-  stroke: #000;
+  stroke: #555;
 }
 
 #boundaries {
   fill: none;
-  stroke: #000;
+  stroke: #555;
   stroke-width: 0.04;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -125,6 +125,7 @@ svg, canvas {
   text-anchor: middle;
   font-size: 1px;
   /* text-transform: uppercase; */
+  /* font-variant-caps: small-caps; */
   font-weight: bold;
 }
 
