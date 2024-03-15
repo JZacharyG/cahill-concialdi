@@ -79,12 +79,39 @@ function convertPointListsToSvgPath(pointLists, isClosed) {
 
 const show_admin1 = ['USA', 'AUS', 'CAN'];//, 'MEX', 'BRA', 'RUS'];
 const show_admin1_details = ['USA', 'AUS', 'CAN'];
-const hide_admin0_capital = ['SVN','HRV', 'ALB', 'BIH', 'MNE', 'KOS', 'MKD', 'LIE', 'ATG', 'KNA', 'LCA', 'DMA', 'VCT', 'BRB', 'GRD', 'CYP', 'MLT', 'MUS', 'SYC', 'COM'];
+const hide_admin0_capital = [
+  'SVN',
+  'HRV',
+  'ALB',
+  'BIH',
+  'MNE',
+  'KOS',
+  'MKD',
+  'LIE',
+  'ATG',
+  'KNA',
+  'LCA',
+  'DMA',
+  'VCT',
+  'BRB',
+  'GRD',
+  'CYP',
+  'MLT',
+  'MUS',
+  'SYC',
+  'COM',
+  'LUX', // Luxembourg
+  'MCO', // Monaco
+  'SMR', // San Marino
+  'AND', // Andorra
+  'VAT', // Vatican
+  'STP', // Sao Tome and Principe
+  ];
 
 function drawCities(labels = true) {
   getJson('ne_10m_populated_places_simple.json').then(cities => {
     cities.forEach(city => {
-      if (city.properties.scalerank <= 2 || (city.properties.featurecla === 'Admin-0 capital' && !hide_admin0_capital.includes(city.properties.adm0_a3)) || (city.properties.featurecla === 'Admin-1 capital' && show_admin1_details.includes(city.properties.adm0_a3))) {
+      if (city.properties.min_zoom <= 4 || (city.properties.featurecla === 'Admin-0 capital' && !hide_admin0_capital.includes(city.properties.adm0_a3)) || (city.properties.featurecla === 'Admin-1 capital' && show_admin1_details.includes(city.properties.adm0_a3))) {
         const location = project(new LatLon(city.geometry.coordinates[1], city.geometry.coordinates[0]));
         const dot = fCSVGE('circle');
         dot.setAttribute('cx', location.x);
@@ -116,7 +143,7 @@ function drawCities(labels = true) {
               break;
             case 'S':
               name.setAttribute('x', location.x + city.properties.label_dx);
-              name.setAttribute('y', location.y - city.properties.label_dy + 0.5);
+              name.setAttribute('y', location.y - city.properties.label_dy + 0.6);
               name.classList.add('center-align');
               break;
           }
@@ -144,7 +171,11 @@ function drawCountries(regions = true, labels = true) {
         fGID('countries').appendChild(path);
       }
 
-      if (labels && ['Sovereign country', 'Country', 'Sovereignty', 'Disputed'].includes(country.properties.type) || ['ATA', 'SAH'].includes(country.properties.adm0_a3)) {
+      if (labels && (
+          ['Sovereign country', 'Sovereignty', 'Disputed'].includes(country.properties.type)
+          || country.properties.type === 'Country' && (country.properties.name === country.properties.sovereignt)
+          || ['ATA', 'SAH', 'SXM', 'HKG', 'GRL', 'CUW', 'ABW'].includes(country.properties.adm0_a3)
+          )) {
         const location = project(new LatLon(country.properties.label_y, country.properties.label_x));
         const l2 = project(new LatLon(country.properties.label_y, country.properties.label_x+1));
         const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
@@ -161,7 +192,8 @@ function drawCountries(regions = true, labels = true) {
           }
           const name_path = convertPointListsToSvgPath([points], false);
           name_path.setAttribute('id', country.properties.adm0_a3+'-label-path');
-          fGID('defs').appendChild(name_path);
+          name_path.setAttribute('style', 'fill:none');
+          fGID('country-labels').appendChild(name_path);
 
           const name = fCSVGE('text');
           name.setAttribute('style','font-size:' + (country.properties.label_size/100) + 'px;');
