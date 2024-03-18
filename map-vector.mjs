@@ -237,6 +237,17 @@ function drawStateLabels() {
         const location = project(new LatLon(state.properties.label_y, state.properties.label_x));
         const l2 = project(new LatLon(state.properties.label_y, state.properties.label_x+1));
         const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
+        let alignment = 'C';
+        if (state.properties.line_to !== undefined) {
+          const anchor = project(new LatLon(state.properties.line_to[1], state.properties.line_to[0]));
+          const label_line = fCSVGE('line');
+          label_line.setAttribute('x1', location.x);
+          label_line.setAttribute('y1', location.y);
+          label_line.setAttribute('x2', anchor.x);
+          label_line.setAttribute('y2', anchor.y);
+          fGID('state-labels').appendChild(label_line);
+          alignment = 'L';
+        }
 
         const name = (adm0 === 'USA'?state.properties.postal:state.properties.name);
         name.split('\n').forEach((line, idx) => {
@@ -245,6 +256,8 @@ function drawStateLabels() {
           label.setAttribute('y', location.y+0.75*.3+idx*0.75*state.properties.label_size/100);
           label.setAttribute('transform', 'rotate(' + (angle - state.properties.label_angle) + ', ' + location.x +', ' + location.y + ')');
           label.setAttribute('style','font-size:' + (0.75*state.properties.label_size/100) + 'px;');
+          if (alignment === 'L')
+            label.classList.add('left-align');
           label.innerHTML = line;
 
           fGID('state-labels').appendChild(label);
