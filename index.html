@@ -32,7 +32,17 @@ svg, canvas {
     'cv52' 1; /* Q's tail */
 }
 
-* {font-family: Andika;}
+@font-face {
+  font-family: 'Noto Sans';
+  src: url(NotoSans-VariableFont_wdth,wght.ttf) format('ttf');
+}
+
+@font-face {
+  font-family: 'Noto Serif';
+  src: url(NotoSerif-VariableFont_wdth,wght.ttf) format('ttf');
+}
+
+* {font-family: Noto Sans;}
 
 #background {
   /* fill: #00A1BE; */
@@ -121,23 +131,27 @@ svg, canvas {
   stroke: red;
   /* stroke-dasharray: 0.4 0.2; */
 }
-#country-labels {
+#country-labels text {
   text-anchor: middle;
   font-size: 1px;
   /* text-transform: uppercase; */
-  /* font-variant-caps: small-caps; */
-  font-weight: bold;
+  font-variant-caps: small-caps;
+  /* font-weight: bold; */
 }
 
-#state-labels {
+#state-labels text {
   text-anchor: middle;
   font-size: .75px;
   font-variant-caps: small-caps;
+}
+
+#state-labels line {
   stroke: #000;
   stroke-width: 0.03;
 }
 
-#cities {
+#cities text {
+  font-family: Noto Serif;
   font-size: .5px;
 }
 
@@ -145,6 +159,7 @@ svg, canvas {
   stroke: #000;
   stroke-width: 0.05px;
   fill: none;
+  opacity: .75; /* I don't know, it's kinda fun? */
 }
 
 #cities circle.capital {
@@ -160,7 +175,7 @@ svg, canvas {
 }
 
 .left-align {
-  text-anchor: start;
+  text-anchor: start !important;
 }
 </style>
   <g id="svg-map-wrapper">
