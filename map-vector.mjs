@@ -2,8 +2,8 @@
 // VECTOR MAP LAYERS DRAWING ROUTINES
 // ------------------------------------------------------------------
 
-import { fGID, fQS, fCSVGE, getJson, EARTH_TILT, MAX_COLOR_VALUE, DEGS_IN_CIRCLE, rad2Deg } from './globals.mjs';
-import { LatLon } from './data-types.mjs';
+import { fGID, fQS, fCSVGE, getJson, EARTH_TILT, MAX_COLOR_VALUE, DEGS_IN_CIRCLE, rad2Deg, deg2Rad } from './globals.mjs';
+import { LatLon, Point } from './data-types.mjs';
 import { MAP_VIEW_ORIGIN, MAP_WIDTH, MAP_HEIGHT, MAP_TILT_DEG,
          MAP_AREAS, project } from './concialdi.mjs';
 
@@ -80,26 +80,26 @@ function convertPointListsToSvgPath(pointLists, isClosed) {
 const show_admin1 = ['USA', 'AUS', 'CAN'];//, 'MEX', 'BRA', 'RUS'];
 const show_admin1_details = ['USA', 'AUS', 'CAN'];
 const hide_admin0_capital = [
-  'SVN',
-  'HRV',
-  'ALB',
-  'BIH',
-  'MNE',
-  'KOS',
-  'MKD',
-  'LIE',
-  'ATG',
-  'KNA',
-  'LCA',
-  'DMA',
-  'VCT',
-  'BRB',
-  'GRD',
-  'CYP',
-  'MLT',
-  'MUS',
-  'SYC',
-  'COM',
+  'SVN', // Slovenia
+  'HRV', // Croatia
+  'ALB', // Albania
+  'BIH', // Bosnia and Herzegovina
+  'MNE', // Montenegro
+  'KOS', // Kosovo
+  'MKD', // North Macedonia
+  'LIE', // Liechtenstein
+  'ATG', // Antigua and Barbuda
+  'KNA', // Saint Kitts and Nevis
+  'LCA', // Saint Lucia
+  'DMA', // Dominica
+  'VCT', // Saint Vincent and the Grenadines
+  'BRB', // Barbados
+  'GRD', // Grenada
+  'CYP', // Cyprus
+  'MLT', // Malta
+  'MUS', // Mauritius
+  'SYC', // Seychelles
+  'COM', // Comoros
   'LUX', // Luxembourg
   'MCO', // Monaco
   'SMR', // San Marino
@@ -114,7 +114,14 @@ function drawCities(labels = true) {
   getJson('ne_10m_populated_places_simple.json').then(cities => {
     cities.forEach(city => {
       if (['Singapore', 'Hong Kong'].includes(city.properties.name)) return; // could handle this better...
-      if (city.properties.min_zoom <= 4 || (city.properties.featurecla === 'Admin-0 capital' && !hide_admin0_capital.includes(city.properties.adm0_a3)) || (city.properties.featurecla === 'Admin-1 capital' && show_admin1_details.includes(city.properties.adm0_a3))) {
+      if (city.properties.min_zoom <= 5.6 // 5.1 or 5.6 seems right, depending on the place, 6 is definitely too much
+          || (city.properties.featurecla === 'Admin-0 capital' && !hide_admin0_capital.includes(city.properties.adm0_a3))
+          //|| (city.properties.featurecla === 'Admin-1 capital' && show_admin1_details.includes(city.properties.adm0_a3))
+          || [
+              'Smolensk', // Cousins from here! (covered at zoom 5.1)
+              'Longyearbyen', // Northernmost settlement with a permanent population over 1,000
+              // 'Hammerfest', // Northernmost settlement with a permanent population over 10,000 (covered at zoom 5.1)
+             ].includes(city.properties.name)) {
         const location = project(new LatLon(city.geometry.coordinates[1], city.geometry.coordinates[0]));
         const dot = fCSVGE('circle');
         dot.setAttribute('cx', location.x);
@@ -232,36 +239,56 @@ function drawStateLabels() {
       const adm0 = state.properties.adm0_a3;
       if (adm0 === 'AUS' && state.properties.type !== 'State') return;
       if (state.properties.postal === 'DC') return;
-      // (special case for including the Azores)
+      // (includes special case for including the Azores)
       if (show_admin1_details.includes(adm0) && state.properties.name !== null || state.properties.code_hasc === 'PT.AC') {
         const location = project(new LatLon(state.properties.label_y, state.properties.label_x));
         const l2 = project(new LatLon(state.properties.label_y, state.properties.label_x+1));
-        const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
-        let alignment = 'C';
-        if (state.properties.line_to !== undefined) {
-          const anchor = project(new LatLon(state.properties.line_to[1], state.properties.line_to[0]));
-          const label_line = fCSVGE('line');
-          label_line.setAttribute('x1', location.x);
-          label_line.setAttribute('y1', location.y);
-          label_line.setAttribute('x2', anchor.x);
-          label_line.setAttribute('y2', anchor.y);
-          fGID('state-labels').appendChild(label_line);
-          alignment = 'L';
-        }
+        const angle = rad2Deg(location.getAngleTo(l2));
 
         const name = (adm0 === 'USA'?state.properties.postal:state.properties.name);
-        name.split('\n').forEach((line, idx) => {
-          const label = fCSVGE('text');
-          label.setAttribute('x', location.x);
-          label.setAttribute('y', location.y+0.75*.3+idx*0.75*state.properties.label_size/100);
-          label.setAttribute('transform', 'rotate(' + (angle - state.properties.label_angle) + ', ' + location.x +', ' + location.y + ')');
-          label.setAttribute('style','font-size:' + (0.75*state.properties.label_size/100) + 'px;');
-          if (alignment === 'L')
-            label.classList.add('left-align');
-          label.innerHTML = line;
+        const label = fCSVGE('text');
+        label.setAttribute('x', location.x);
+        label.setAttribute('y', location.y+0.75*.3);
+        label.setAttribute('transform', 'rotate(' + (angle - state.properties.label_angle) + ', ' + location.x +', ' + location.y + ')');
+        label.setAttribute('style', 'font-size:' + (0.75*state.properties.label_size/100) + 'px;');
+        if (name.includes("\n")) {
+          name.split('\n').forEach((line, idx) => {
+            const label_tspan = fCSVGE('tspan');
+            label_tspan.setAttribute('x', location.x);
+            if (idx)
+              label_tspan.setAttribute('dy', 0.75*state.properties.label_size/100);
+            label_tspan.innerHTML = line;
+            label.appendChild(label_tspan);
+          });
+        } else {
+          label.innerHTML = name;
+        }
 
-          fGID('state-labels').appendChild(label);
-        });
+        fGID('state-labels').appendChild(label);
+
+        if (state.properties.line_to !== undefined) {
+          const label_bbox = label.getBBox();
+          const label_center = new Point(label_bbox.x+label_bbox.width/2, label_bbox.y+label_bbox.height/2);
+          label_center.translate(location.copy().scale(-1)).rotate(deg2Rad(angle - state.properties.label_angle)).translate(location);
+          const other_end = project(new LatLon(state.properties.line_to[1], state.properties.line_to[0]));
+          const angle_to = rad2Deg(label_center.getAngleTo(other_end)) - (angle - state.properties.label_angle);
+
+          let anchor_point = new Point(label_bbox.x, label_bbox.y+label_bbox.height/2);
+          if (45 < angle_to && angle_to < 135)
+            anchor_point = new Point(label_bbox.x+label_bbox.width/2, label_bbox.y+label_bbox.height);
+          if (-45 > angle_to && angle_to > -135)
+            anchor_point = new Point(label_bbox.x+label_bbox.width/2, label_bbox.y);
+          if (-45 <= angle_to && angle_to <= 45)
+            anchor_point = new Point(label_bbox.x+label_bbox.width, label_bbox.y+label_bbox.height/2);
+          anchor_point.translate(location.copy().scale(-1)).rotate(deg2Rad(angle - state.properties.label_angle)).translate(location);
+
+          const label_line = fCSVGE('line');
+          label_line.setAttribute('x1', anchor_point.x);
+          label_line.setAttribute('y1', anchor_point.y);
+          label_line.setAttribute('x2', other_end.x);
+          label_line.setAttribute('y2', other_end.y);
+          fGID('state-labels').appendChild(label_line);
+        }
       }
     });
   });
