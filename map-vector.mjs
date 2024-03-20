@@ -120,7 +120,7 @@ function drawCities(labels = true) {
         dot.setAttribute('cx', location.x);
         dot.setAttribute('cy', location.y);
         //dot.setAttribute('r', ((city.rank_max+6)/70).toString()+'px');
-        // dot.setAttribute('r', '.1px');
+        dot.setAttribute('r', '.1px');
         if (city.properties.featurecla === 'Admin-0 capital')
           dot.classList.add('capital');
 
