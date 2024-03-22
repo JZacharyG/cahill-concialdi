@@ -13,11 +13,21 @@ html, body {
 
 svg, canvas {
   position: absolute;
-  width: 100vw;
+  width: var(--zoom-level, 100vw);
+}
 
 .zoom-export {
   width: 2133px;
 }
+
+.zoom-button {
+  position: fixed;
+  bottom: 40px;
+  right: 10px;
+  width:20px;
+  height:20px;
+  text-align:center;
+  background-color: hotpink;
 }
 </style>
 <body>
@@ -207,8 +217,26 @@ function download() {
   createEl.click();
   createEl.remove();
 }
+
+var zoom_level = 100;
+function zoomIn() {
+  zoom_level += 50;
+  document.getElementsByTagName('body')[0].setAttribute('style','--zoom-level:'+zoom_level+'vw;');
+}
+function zoomOut() {
+  zoom_level = Math.max(zoom_level-50, 100);
+  document.getElementsByTagName('body')[0].setAttribute('style','--zoom-level:'+zoom_level+'vw;');
+}
+function zoomFit() {
+  zoom_level = 100;
+  document.getElementsByTagName('body')[0].setAttribute('style','--zoom-level:'+zoom_level+'vw;');
+}
+
 </script>
 <span style="position: fixed; bottom: 10px; right: 10px; background-color: hotpink;" onclick="download()">Download Canvas!</span>
+<span class="zoom-button" style="right: 10px;" onclick="zoomIn()">+</span>
+<span class="zoom-button" style="right: 40px;" onclick="zoomOut()">–</span>
+<span class="zoom-button" style="right: 70px;" onclick="zoomFit()">x</span>
 
 <script src="https://unpkg.com/complex.js@2.0.11/complex.min.js"></script>
 <script type="module">
