@@ -14,6 +14,10 @@ html, body {
 svg, canvas {
   position: absolute;
   width: 100vw;
+
+.zoom-export {
+  width: 2133px;
+}
 }
 </style>
 <body>
@@ -194,17 +198,17 @@ svg, canvas {
 </svg>
 <script>
 function download() {
-  const c = document.getElementsByTagName("canvas")[0];
+  const c = document.getElementsByTagName('canvas')[0];
   let canvasUrl = c.toDataURL();
-  //let canvasUrl = c.toDataURL("image/jpeg", 0.85);
+  //let canvasUrl = c.toDataURL('image/jpeg', 0.85);
   const createEl = document.createElement('a');
   createEl.href = canvasUrl;
-  createEl.download = "cahill-concialdi";
+  createEl.download = 'cahill-concialdi';
   createEl.click();
   createEl.remove();
 }
 </script>
-<span style="position: fixed; bottom: 10px; right: 10px;background-color: hotpink;" onclick="download()">Download Canvas!</span>
+<span style="position: fixed; bottom: 10px; right: 10px; background-color: hotpink;" onclick="download()">Download Canvas!</span>
 
 <script src="https://unpkg.com/complex.js@2.0.11/complex.min.js"></script>
 <script type="module">
@@ -214,6 +218,9 @@ import {
   drawRasterMap,
   RASTER_NE_I,
   RASTER_NE_II,
+  GRAYSCALE,
+  SHADED_RELIEF,
+  SHADED_RELIEF_OCEANS,
   RASTER_NE_HYPSO,
   RASTER_NASA_BLUE,
   RASTER_NASA_BLACK,
@@ -225,16 +232,6 @@ import {
 drawVectorMap();
 //drawRasterMap(RASTER_NE_II);
 
-function download() {
-  const c = document.getElementsByTagName("canvas")[0];
-  //let canvasUrl = c.toDataURL("image/jpeg", 0.85);
-  let canvasUrl = c.toDataURL();
-  const createEl = document.createElement('a');
-  createEl.href = canvasUrl;
-  createEl.download = "cahill-concialdi";
-  createEl.click();
-  createEl.remove();
-}
 </script>
 </body>
 </html>

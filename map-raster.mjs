@@ -20,13 +20,16 @@ const NE_II_FILENAME      = 'ne-ii-large-recolored.png';
 const NE_HYPSO_FILENAME   = 'ne-hypso.jpg';
 const NASA_BLUE_FILENAME  = 'nasa-blue-marble-ng.jpg';
 const NASA_BLACK_FILENAME = 'nasa-black-marble.jpg';
+const GRAYSCALE_FILENAME  = 'GRAY_HR_SR.png';
+const SHADED_RELIEF_FILENAME = 'SR_HR.png';
+const SHADED_RELIEF_OCEANS_FILENAME = 'SR_OCEANS_HR.png';
 
 // Source raster maps' pixels per degree measure.
-// Note: All maps are expected to have 3600×1800 dimensions.
+// Note: All maps are expected to have 21600×10800 (formerly 3600×1800) dimensions.
 const SOURCE_RASTER_PPD = 60;
 
 // HiDPI factor: Canvas dimensions will be upscaled by this factor
-const CANVAS_PIXEL_DENSITY = 17;
+const CANVAS_PIXEL_DENSITY = 10;
 
 // Min-max distance of the solar terminator in radians from the solar position;
 // interval is used for terminator "blurring"
@@ -48,6 +51,9 @@ class RasterStyle {
 export const [
   RASTER_NE_I,
   RASTER_NE_II,
+  GRAYSCALE,
+  SHADED_RELIEF,
+  SHADED_RELIEF_OCEANS,
   RASTER_NE_HYPSO,
   RASTER_NASA_BLUE,
   RASTER_NASA_BLACK,
@@ -57,6 +63,9 @@ export const [
 ] = [
   [[NE_I_FILENAME                          ], false, '#0002'],
   [[NE_II_FILENAME                         ], false, '#0002'],
+  [[GRAYSCALE_FILENAME                     ], false, '#0002'],
+  [[SHADED_RELIEF_FILENAME                 ], false, '#0002'],
+  [[SHADED_RELIEF_OCEANS_FILENAME          ], false, '#0002'],
   [[NE_HYPSO_FILENAME                      ], false, '#0002'],
   [[NASA_BLUE_FILENAME                     ], false, '#fff3'],
   [[NASA_BLACK_FILENAME                    ], false, '#fff3'],
