@@ -79,7 +79,7 @@ function convertPointListsToSvgPath(pointLists, isClosed) {
 
 const show_admin1 = ['USA', 'AUS', 'CAN'];//, 'MEX', 'BRA', 'RUS'];
 const show_admin1_details = ['USA', 'AUS', 'CAN'];
-const hide_admin0_capital = [
+const admin0_hide_cities = [
   'SVN', // Slovenia
   'HRV', // Croatia
   'ALB', // Albania
@@ -115,14 +115,15 @@ function drawCities(labels = true) {
   getJson('ne_10m_populated_places_simple.json').then(cities => {
     cities.forEach(city => {
       if (['Singapore', 'Hong Kong'].includes(city.properties.name)) return; // could handle this better...
-      if (city.properties.min_zoom <= 5.6 // 5.1 or 5.6 seems right, depending on the place, 6 is definitely too much
-          || (city.properties.featurecla === 'Admin-0 capital' && !hide_admin0_capital.includes(city.properties.adm0_a3))
+      if (!admin0_hide_cities.includes(city.properties.adm0_a3) && (
+          city.properties.min_zoom <= 5.6 // 5.1 or 5.6 seems right, depending on the place, 6 is definitely too much
+          || city.properties.featurecla === 'Admin-0 capital'
           //|| (city.properties.featurecla === 'Admin-1 capital' && show_admin1_details.includes(city.properties.adm0_a3))
           || [
               'Smolensk', // Cousins from here! (covered at zoom 5.1)
               'Longyearbyen', // Northernmost settlement with a permanent population over 1,000
               // 'Hammerfest', // Northernmost settlement with a permanent population over 10,000 (covered at zoom 5.1)
-             ].includes(city.properties.name)) {
+             ].includes(city.properties.name))) {
         const location = project(new LatLon(city.geometry.coordinates[1], city.geometry.coordinates[0]));
         const dot = fCSVGE('circle');
         dot.setAttribute('cx', location.x);
@@ -175,89 +176,47 @@ function drawCities(labels = true) {
   });
 }
 
-function drawCountries(regions = true, labels = true) {
-  getJson('ne_10m_admin_0_countries_lakes.json').then(countries => {
-    countries.forEach(country => {
-      if (regions) {
-        const path = convertGeoJsonToSvgPath(country.geometry.coordinates);
-        path.classList.add("c"+country.properties.mapcolor7);
-        fGID('countries').appendChild(path);
-      }
+function drawRegionLabels(data, destination_id, font_size, display_filter, name_map=(x => {return x.properties.name;})) {
+  data.forEach(region => {
+    if (region.properties.label_size !== 0 && display_filter(region)) {
+      const location = project(new LatLon(region.properties.label_y, region.properties.label_x));
+      const l2 = project(new LatLon(region.properties.label_y, region.properties.label_x+1));
+      const angle = rad2Deg(location.getAngleTo(l2));
+      const name = name_map(region);
+      const label = fCSVGE('text');
+      label.setAttribute('style','font-size:' + (font_size*region.properties.label_size/100) + 'px;');
 
-      if (labels && (
-          ['Sovereign country', 'Sovereignty', 'Disputed'].includes(country.properties.type)
-          || country.properties.type === 'Country' && (country.properties.name === country.properties.sovereignt)
-          || ['ATA', 'SAH', 'SXM', 'HKG', 'GRL', 'CUW', 'ABW'].includes(country.properties.adm0_a3)
-          )) {
-        const location = project(new LatLon(country.properties.label_y, country.properties.label_x));
-        const l2 = project(new LatLon(country.properties.label_y, country.properties.label_x+1));
-        const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
-
-        if (country.properties.label_bend_width !== undefined) {
-          let points = [];
-          const lat = country.properties.label_y;
-          for (
-            let lon = country.properties.label_x - country.properties.label_bend_width;
-            lon <= country.properties.label_x + country.properties.label_bend_width;
-            lon += 0.5
-          ) {
-            points.push(project(new LatLon(lat,lon)));
-          }
-          const name_path = convertPointListsToSvgPath([points], false);
-          name_path.setAttribute('id', country.properties.adm0_a3+'-label-path');
-          name_path.setAttribute('style', 'fill:none');
-          fGID('country-labels').appendChild(name_path);
-
-          const name = fCSVGE('text');
-          name.setAttribute('style','font-size:' + (country.properties.label_size/100) + 'px;');
-          const name_inner = fCSVGE('textPath');
-          name_inner.setAttribute('href', '#'+country.properties.adm0_a3+'-label-path');
-          name_inner.innerHTML = country.properties.name;
-          name_inner.setAttribute('startOffset', '50%');
-          name.appendChild(name_inner);
-          fGID('country-labels').appendChild(name);
-        } else {
-          country.properties.name.split('\n').forEach((line, idx) => {
-            const name = fCSVGE('text');
-            name.setAttribute('x', location.x);
-            name.setAttribute('y', location.y + .3 + idx*country.properties.label_size/100);
-            name.setAttribute('transform', 'rotate(' + (angle-country.properties.label_angle) + ', ' + location.x +', ' + location.y + ')');
-            // name.classList.add('s'+country.properties.label_size);
-            name.setAttribute('style','font-size:' + (country.properties.label_size/100) + 'px;');
-            name.innerHTML = line;
-
-            fGID('country-labels').appendChild(name);
-          });
+      if (region.properties.label_bend_width !== undefined) {
+        let points = [];
+        const lat = region.properties.label_y;
+        for (
+          let lon = region.properties.label_x - region.properties.label_bend_width;
+          lon <= region.properties.label_x + region.properties.label_bend_width;
+          lon += 0.5
+        ) {
+          points.push(project(new LatLon(lat,lon)));
         }
-      }
-    });
-  });
-}
+        const label_path = convertPointListsToSvgPath([points], false);
+        label_path.setAttribute('id', region.properties.ne_id+'-label-path');
+        label_path.setAttribute('style', 'fill:none');
+        fGID(destination_id).appendChild(label_path);
 
-function drawStateLabels() {
-  getJson('ne_10m_admin_1_states_provinces_lakes.json').then(states => {
-    states.forEach(state => {
-      const adm0 = state.properties.adm0_a3;
-      if (adm0 === 'AUS' && state.properties.type !== 'State') return;
-      if (state.properties.postal === 'DC') return;
-      // (includes special case for including the Azores)
-      if (show_admin1_details.includes(adm0) && state.properties.name !== null || state.properties.code_hasc === 'PT.AC') {
-        const location = project(new LatLon(state.properties.label_y, state.properties.label_x));
-        const l2 = project(new LatLon(state.properties.label_y, state.properties.label_x+1));
-        const angle = rad2Deg(location.getAngleTo(l2));
-
-        const name = (adm0 === 'USA'?state.properties.postal:state.properties.name);
-        const label = fCSVGE('text');
+        const label_inner = fCSVGE('textPath');
+        label_inner.setAttribute('href', '#'+region.properties.ne_id+'-label-path');
+        label_inner.innerHTML = name;
+        label_inner.setAttribute('startOffset', '50%');
+        label.appendChild(label_inner);
+        fGID(destination_id).appendChild(label);
+      } else {
         label.setAttribute('x', location.x);
-        label.setAttribute('y', location.y+0.75*.3);
-        label.setAttribute('transform', 'rotate(' + (angle - state.properties.label_angle) + ', ' + location.x +', ' + location.y + ')');
-        label.setAttribute('style', 'font-size:' + (0.75*state.properties.label_size/100) + 'px;');
-        if (name.includes("\n")) {
+        label.setAttribute('y', location.y + font_size*.3);
+        label.setAttribute('transform', 'rotate(' + (angle - region.properties.label_angle) + ',' + location.x +',' + location.y + ')');
+        if (name.includes('\n')) {
           name.split('\n').forEach((line, idx) => {
             const label_tspan = fCSVGE('tspan');
             label_tspan.setAttribute('x', location.x);
             if (idx)
-              label_tspan.setAttribute('dy', 0.75*state.properties.label_size/100);
+              label_tspan.setAttribute('dy', font_size*region.properties.label_size/100);
             label_tspan.innerHTML = line;
             label.appendChild(label_tspan);
           });
@@ -265,14 +224,14 @@ function drawStateLabels() {
           label.innerHTML = name;
         }
 
-        fGID('state-labels').appendChild(label);
+        fGID(destination_id).appendChild(label);
 
-        if (state.properties.line_to !== undefined) {
+        if (region.properties.line_to !== undefined) {
           const label_bbox = label.getBBox();
           const label_center = new Point(label_bbox.x+label_bbox.width/2, label_bbox.y+label_bbox.height/2);
-          label_center.translate(location.copy().scale(-1)).rotate(deg2Rad(angle - state.properties.label_angle)).translate(location);
-          const other_end = project(new LatLon(state.properties.line_to[1], state.properties.line_to[0]));
-          const angle_to = rad2Deg(label_center.getAngleTo(other_end)) - (angle - state.properties.label_angle);
+          label_center.translate(location.copy().scale(-1)).rotate(deg2Rad(angle - region.properties.label_angle)).translate(location);
+          const other_end = project(new LatLon(region.properties.line_to[1], region.properties.line_to[0]));
+          const angle_to = rad2Deg(label_center.getAngleTo(other_end)) - (angle - region.properties.label_angle);
 
           let anchor_point = new Point(label_bbox.x, label_bbox.y+label_bbox.height/2);
           if (45 < angle_to && angle_to < 135)
@@ -281,7 +240,7 @@ function drawStateLabels() {
             anchor_point = new Point(label_bbox.x+label_bbox.width/2, label_bbox.y);
           if (-45 <= angle_to && angle_to <= 45)
             anchor_point = new Point(label_bbox.x+label_bbox.width, label_bbox.y+label_bbox.height/2);
-          anchor_point.translate(location.copy().scale(-1)).rotate(deg2Rad(angle - state.properties.label_angle)).translate(location);
+          anchor_point.translate(location.copy().scale(-1)).rotate(deg2Rad(angle - region.properties.label_angle)).translate(location);
 
           const label_line = fCSVGE('line');
           label_line.setAttribute('x1', anchor_point.x);
@@ -291,29 +250,51 @@ function drawStateLabels() {
           fGID('state-labels').appendChild(label_line);
         }
       }
+    }
+  });
+}
+
+function drawCountries(regions = true, labels = true) {
+  getJson('ne_10m_admin_0_countries_lakes.json').then(countries => {
+    countries.forEach(country => {
+      if (regions) {
+        const path = convertGeoJsonToSvgPath(country.geometry.coordinates);
+        path.classList.add("c"+country.properties.mapcolor7);
+        fGID('countries').appendChild(path);
+      }
     });
+    if (labels) {
+      drawRegionLabels(countries, 'country-labels', 1,
+        country => {
+          return ['Sovereign country', 'Sovereignty', 'Disputed', 'Dependency'].includes(country.properties.type)
+            || country.properties.type === 'Country' && (country.properties.name === country.properties.sovereignt)
+            || ['ATA', 'SAH', 'SXM', 'HKG', 'GRL', 'CUW', 'ABW'].includes(country.properties.adm0_a3);
+        }
+      );
+    }
+  });
+}
+
+function drawStateLabels() {
+  getJson('ne_10m_admin_1_states_provinces_lakes.json').then(states => {
+    drawRegionLabels(states, 'state-labels', 0.75,
+      state => {
+        const adm0 = state.properties.adm0_a3;
+        if (adm0 === 'AUS' && state.properties.type !== 'State') return false;
+        if (state.properties.postal === 'DC') return false;
+        // (includes special case for including the Azores)
+        return (show_admin1_details.includes(adm0) && state.properties.name !== null || state.properties.code_hasc === 'PT.AC');
+      },
+      state => {
+        return state.properties.adm0_a3 === 'USA'?state.properties.postal:state.properties.name;
+      }
+    );
   });
   getJson('ne_10m_admin_0_map_units_UK.json').then(states => {
-    states.forEach(state => {
-      if (state.properties.type !== 'Geo unit') return;
-      const location = project(new LatLon(state.properties.label_y, state.properties.label_x));
-      const l2 = project(new LatLon(state.properties.label_y, state.properties.label_x+1));
-      const angle = rad2Deg(Math.atan2(l2.y-location.y, l2.x-location.x));
-
-      const name = state.properties.name;
-      name.split('\n').forEach((line, idx) => {
-        const label = fCSVGE('text');
-        label.setAttribute('x', location.x);
-        label.setAttribute('y', location.y+0.75*.3+idx*0.75*state.properties.label_size/100);
-        label.setAttribute('transform', 'rotate(' + (angle - state.properties.label_angle) + ', ' + location.x +', ' + location.y + ')');
-        label.setAttribute('style','font-size:' + (0.75*state.properties.label_size/100) + 'px;');
-        label.innerHTML = line;
-
-        fGID('state-labels').appendChild(label);
-      });
-    });
+    drawRegionLabels(states, 'state-labels', 0.75,
+      state => { return state.properties.type === 'Geo unit'; }
+    );
   });
-
 }
 
 function drawStateBoundaries() {
