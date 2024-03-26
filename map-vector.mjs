@@ -108,6 +108,7 @@ const hide_admin0_capital = [
   'STP', // Sao Tome and Principe
   'TUV', // Tuvalu
   'KIR', // Kiribati
+  'BMU', // Bermuda
   ];
 
 function drawCities(labels = true) {
