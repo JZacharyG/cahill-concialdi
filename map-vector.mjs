@@ -77,8 +77,7 @@ function convertPointListsToSvgPath(pointLists, isClosed) {
 
 // ------------------------------------------------------------------
 
-const show_admin1 = ['USA', 'AUS', 'CAN'];//, 'MEX', 'BRA', 'RUS'];
-const show_admin1_details = ['USA', 'AUS', 'CAN'];
+const admin0_show_admin1 = ['USA', 'AUS', 'CAN'];//, 'MEX', 'BRA', 'RUS'];
 const admin0_hide_cities = [
   'SVN', // Slovenia
   'HRV', // Croatia
@@ -109,16 +108,17 @@ const admin0_hide_cities = [
   'TUV', // Tuvalu
   'KIR', // Kiribati
   'BMU', // Bermuda
+  'GIB', // Gibraltar
   ];
 
 function drawCities(labels = true) {
   getJson('ne_10m_populated_places_simple.json').then(cities => {
     cities.forEach(city => {
       if (['Singapore', 'Hong Kong'].includes(city.properties.name)) return; // could handle this better...
-      if (!admin0_hide_cities.includes(city.properties.adm0_a3) && (
-          city.properties.min_zoom <= 5.6 // 5.1 or 5.6 seems right, depending on the place, 6 is definitely too much
+      if (!admin0_hide_cities.includes(city.properties.adm0_a3) && city.properties.label_size !== 0 && (
+          city.properties.min_zoom <= 5.1 // 5.1 or 5.6 seems right, depending on the place, 6 is definitely too much
           || city.properties.featurecla === 'Admin-0 capital'
-          //|| (city.properties.featurecla === 'Admin-1 capital' && show_admin1_details.includes(city.properties.adm0_a3))
+          //|| (city.properties.featurecla === 'Admin-1 capital' && admin0_show_admin1.includes(city.properties.adm0_a3))
           || [
               'Smolensk', // Cousins from here! (covered at zoom 5.1)
               'Longyearbyen', // Northernmost settlement with a permanent population over 1,000
@@ -184,7 +184,6 @@ function drawRegionLabels(data, destination_id, font_size, display_filter, name_
       const angle = rad2Deg(location.getAngleTo(l2));
       const name = name_map(region);
       const label = fCSVGE('text');
-      label.setAttribute('style','font-size:' + (font_size*region.properties.label_size/100) + 'px;');
 
       if (region.properties.label_bend_width !== undefined) {
         let points = [];
@@ -206,11 +205,14 @@ function drawRegionLabels(data, destination_id, font_size, display_filter, name_
         label_inner.innerHTML = name;
         label_inner.setAttribute('startOffset', '50%');
         label.appendChild(label_inner);
+        label.setAttribute('style','font-size:' + (font_size*region.properties.label_size/100) + 'px;');
+
         fGID(destination_id).appendChild(label);
       } else {
         label.setAttribute('x', location.x);
-        label.setAttribute('y', location.y + font_size*.3);
-        label.setAttribute('transform', 'rotate(' + (angle - region.properties.label_angle) + ',' + location.x +',' + location.y + ')');
+        label.setAttribute('y', location.y + font_size*region.properties.label_size/100*.3);
+        label.setAttribute('transform', 'rotate(' + (angle - region.properties.label_angle) + ', ' + location.x +', ' + location.y + ')');
+        label.setAttribute('style','font-size:' + (font_size*region.properties.label_size/100) + 'px;');
         if (name.includes('\n')) {
           name.split('\n').forEach((line, idx) => {
             const label_tspan = fCSVGE('tspan');
@@ -227,19 +229,22 @@ function drawRegionLabels(data, destination_id, font_size, display_filter, name_
         fGID(destination_id).appendChild(label);
 
         if (region.properties.line_to !== undefined) {
-          const label_bbox = label.getBBox();
-          const label_center = new Point(label_bbox.x+label_bbox.width/2, label_bbox.y+label_bbox.height/2);
-          label_center.translate(location.copy().scale(-1)).rotate(deg2Rad(angle - region.properties.label_angle)).translate(location);
           const other_end = project(new LatLon(region.properties.line_to[1], region.properties.line_to[0]));
-          const angle_to = rad2Deg(label_center.getAngleTo(other_end)) - (angle - region.properties.label_angle);
-
-          let anchor_point = new Point(label_bbox.x, label_bbox.y+label_bbox.height/2);
-          if (45 < angle_to && angle_to < 135)
-            anchor_point = new Point(label_bbox.x+label_bbox.width/2, label_bbox.y+label_bbox.height);
-          if (-45 > angle_to && angle_to > -135)
-            anchor_point = new Point(label_bbox.x+label_bbox.width/2, label_bbox.y);
-          if (-45 <= angle_to && angle_to <= 45)
-            anchor_point = new Point(label_bbox.x+label_bbox.width, label_bbox.y+label_bbox.height/2);
+          let anchor = region.properties.line_anchor;
+          const label_bbox = label.getBBox();
+          if (anchor === undefined) {
+            const label_center = new Point(label_bbox.x+label_bbox.width/2, label_bbox.y+label_bbox.height/2);
+            label_center.translate(location.copy().scale(-1)).rotate(deg2Rad(angle - region.properties.label_angle)).translate(location);
+            const angle_to = rad2Deg(label_center.getAngleTo(other_end)) - (angle - region.properties.label_angle);
+            anchor = [0,50];
+            if (45 < angle_to && angle_to < 135)
+              anchor = [50,0];// = new Point(label_bbox.x+label_bbox.width/2, label_bbox.y+label_bbox.height);
+            if (-45 > angle_to && angle_to > -135)
+              anchor = [50,100];// = new Point(label_bbox.x+label_bbox.width/2, label_bbox.y);
+            if (-45 <= angle_to && angle_to <= 45)
+              anchor = [100,50];// = new Point(label_bbox.x+label_bbox.width, label_bbox.y+label_bbox.height/2);
+          }
+          let anchor_point = new Point(label_bbox.x+anchor[0]*label_bbox.width/100, label_bbox.y+(100-anchor[1])*label_bbox.height/100);
           anchor_point.translate(location.copy().scale(-1)).rotate(deg2Rad(angle - region.properties.label_angle)).translate(location);
 
           const label_line = fCSVGE('line');
@@ -268,7 +273,15 @@ function drawCountries(regions = true, labels = true) {
         country => {
           return ['Sovereign country', 'Sovereignty', 'Disputed', 'Dependency'].includes(country.properties.type)
             || country.properties.type === 'Country' && (country.properties.name === country.properties.sovereignt)
-            || ['ATA', 'SAH', 'SXM', 'HKG', 'GRL', 'CUW', 'ABW'].includes(country.properties.adm0_a3);
+            || [
+                'ATA', // Antarctica
+                'SAH', // Western Sahara
+                'SXM', // Sint Maarten
+                'HKG', // Hong Kong
+                'GRL', // Greenland
+                'CUW', // Curaçao
+                'ABW', // Aruba
+              ].includes(country.properties.adm0_a3);
         }
       );
     }
@@ -277,13 +290,19 @@ function drawCountries(regions = true, labels = true) {
 
 function drawStateLabels() {
   getJson('ne_10m_admin_1_states_provinces_lakes.json').then(states => {
-    drawRegionLabels(states, 'state-labels', 0.75,
+    drawRegionLabels(states, 'state-labels', 1,
       state => {
         const adm0 = state.properties.adm0_a3;
-        if (adm0 === 'AUS' && state.properties.type !== 'State') return false;
+        if (adm0 === 'AUS' && state.properties.type !== 'State' && ![
+              'AU.AC', // Australian Capital Territory
+              'AU.NT', // Northern Terrirory (Australia)
+            ].includes(state.properties.code_hasc)) return false;
         if (state.properties.postal === 'DC') return false;
-        // (includes special case for including the Azores)
-        return (show_admin1_details.includes(adm0) && state.properties.name !== null || state.properties.code_hasc === 'PT.AC');
+        return admin0_show_admin1.includes(adm0) && state.properties.name !== null
+          || state.properties.type_en === 'Overseas department'
+          || [
+              'PT.AC', // Azores
+            ].includes(state.properties.code_hasc);
       },
       state => {
         return state.properties.adm0_a3 === 'USA'?state.properties.postal:state.properties.name;
@@ -291,7 +310,7 @@ function drawStateLabels() {
     );
   });
   getJson('ne_10m_admin_0_map_units_UK.json').then(states => {
-    drawRegionLabels(states, 'state-labels', 0.75,
+    drawRegionLabels(states, 'state-labels', 1,
       state => { return state.properties.type === 'Geo unit'; }
     );
   });
@@ -301,7 +320,7 @@ function drawStateBoundaries() {
   getJson('ne_10m_admin_1_states_provinces_lines.json').then(states => {
     states.forEach(state => {
       const adm0 = state.properties.adm0_a3;
-      if (show_admin1.includes(adm0)) {
+      if (admin0_show_admin1.includes(adm0)) {
         const path = convertGeoJsonToSvgPath(state.geometry.coordinates);
         fGID('state-boundaries').appendChild(path);
       }
