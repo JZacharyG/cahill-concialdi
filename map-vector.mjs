@@ -117,7 +117,7 @@ function drawCities(labels = true) {
       if (['Singapore', 'Hong Kong'].includes(city.properties.name)) return; // could handle this better...
       if (!admin0_hide_cities.includes(city.properties.adm0_a3) && city.properties.label_size !== 0 && (
           city.properties.min_zoom <= 5.1 // 5.1 or 5.6 seems right, depending on the place, 6 is definitely too much
-          || city.properties.featurecla === 'Admin-0 capital'
+          || ['Admin-0 capital'].includes(city.properties.featurecla)
           //|| (city.properties.featurecla === 'Admin-1 capital' && admin0_show_admin1.includes(city.properties.adm0_a3))
           || [
               'Smolensk', // Cousins from here! (covered at zoom 5.1)
@@ -130,7 +130,7 @@ function drawCities(labels = true) {
         dot.setAttribute('cy', location.y);
         //dot.setAttribute('r', ((city.rank_max+6)/70).toString()+'px');
         dot.setAttribute('r', '.1px');
-        if (city.properties.featurecla === 'Admin-0 capital')
+        if (['Admin-0 capital', 'Admin-0 region capital'].includes(city.properties.featurecla))
           dot.classList.add('capital');
 
         if (labels) {
