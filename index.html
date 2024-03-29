@@ -37,16 +37,6 @@ svg, canvas {
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
   <style>
 @font-face {
-  font-family: 'Andika';
-  src: url(Andika-Regular.woff2) format('woff2');
-  font-feature-settings:
-    'cv04' 1, /* open 4 */
-    'cv06' 1, /* slanted stems on 6 and 9 */
-    'cv51' 1, /* q's tail */
-    'cv52' 1; /* Q's tail */
-}
-
-@font-face {
   font-family: 'Noto Sans';
   src: url(NotoSans-VariableFont_wdth,wght.ttf) format('ttf');
 }
@@ -238,7 +228,7 @@ function zoom3ft() {
   document.getElementsByTagName('body')[0].setAttribute('style','--zoom-level:4657.5px;');
 }
 
-zoom6ft();
+//zoom6ft();
 
 </script>
 <span style="position: fixed; bottom: 10px; right: 10px; background-color: hotpink;" onclick="download()">Download Canvas!</span>
