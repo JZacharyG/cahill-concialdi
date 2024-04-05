@@ -27,6 +27,7 @@ export function drawVectorMap() {
   drawBackground();
   drawGraticule(5);
   drawSpecialCircles();
+  drawLatLonLabels();
   drawCountries(true, true);
   drawStateBoundaries();
   drawStateLabels();
@@ -438,6 +439,118 @@ export function drawGraticule(interval = DEFAULT_INTERVAL) {
   // Draw graticule
   const path = convertPointListsToSvgPath(pointLists, false);
   fGID('graticule').appendChild(path);
+}
+
+function drawLatLonLabels() {
+  // Longitude labels near North Pole
+  for (let lon = 180; lon > -180; lon -= 20) {
+    let label = fCSVGE('text');
+    let location = project(new LatLon(85, lon));
+    let location2 = project(new LatLon(84, lon));
+    let angle = rad2Deg(location.getAngleTo(location2));
+
+    label.setAttribute('x', location.x);
+    label.setAttribute('y', location.y);
+    label.setAttribute('transform', 'rotate(' + angle + ', ' + location.x +', ' + location.y + ')');
+    label.classList.add('right-align');
+    label.innerHTML = '' + (lon<0?'–' + (-lon):lon) + '°';
+    fGID('numbers').appendChild(label);
+  }
+
+  // Longitude labels near South Pole
+  for (let lon = 180; lon > -180; lon -= 20) {
+    let label = fCSVGE('text');
+    let location = project(new LatLon(-85, lon));
+    let location2 = project(new LatLon(-84, lon));
+    let angle = rad2Deg(location.getAngleTo(location2));
+
+    label.setAttribute('x', location.x);
+    label.setAttribute('y', location.y);
+    if (-145<=lon && lon<=10) {
+      label.setAttribute('transform', 'rotate(' + angle + ', ' + location.x +', ' + location.y + ')');
+      label.classList.add('right-align');
+    } else {
+      label.setAttribute('transform', 'rotate(' + (180+angle) + ', ' + location.x +', ' + location.y + ')');
+      label.classList.add('left-align');
+    }
+    label.innerHTML = '' + (lon<0?'–' + (-lon):lon) + '°';
+    fGID('numbers').appendChild(label);
+  }
+
+  // Longitude labels near South Africa
+  for (let lon = 60; lon >= -20; lon -= 10) {
+    let label = fCSVGE('text');
+    let location = project(new LatLon(-44.99, lon));
+    let location2 = project(new LatLon(-44.5, lon));
+    let angle = 180+rad2Deg(location.getAngleTo(location2));
+
+    label.setAttribute('x', location.x);
+    label.setAttribute('y', location.y);
+    label.setAttribute('transform', 'rotate(' + angle + ', ' + location.x +', ' + location.y + ')');
+    label.classList.add('right-align');
+    label.innerHTML = '' + (lon<0?'–' + (-lon):lon) + '°';
+    fGID('numbers').appendChild(label);
+  }
+
+  // Latitude labels along top left side
+  for (let lat = 0; lat < 90; lat += 10) {
+    let label = fCSVGE('text');
+    let location = project(new LatLon(lat,-168.499));
+    let location2 = project(new LatLon(lat,-168.4));
+    let angle = rad2Deg(location.getAngleTo(location2));
+
+    label.setAttribute('x', location.x);
+    label.setAttribute('y', location.y);
+    label.setAttribute('transform', 'rotate(' + angle + ', ' + location.x +', ' + location.y + ')');
+    label.classList.add('left-align');
+    label.innerHTML = '' + (lat<0?'–' + (-lat):lat) + '°';
+    fGID('numbers').appendChild(label);
+  }
+
+  // Latitude labels along top right side
+  for (let lat = 0; lat < 90; lat += 10) {
+    let label = fCSVGE('text');
+    let location = project(new LatLon(lat,-168.501));
+    let location2 = project(new LatLon(lat,-168.6));
+    let angle = 180+rad2Deg(location.getAngleTo(location2));
+
+    label.setAttribute('x', location.x);
+    label.setAttribute('y', location.y);
+    label.setAttribute('transform', 'rotate(' + angle + ', ' + location.x +', ' + location.y + ')');
+    label.classList.add('right-align');
+    label.innerHTML = '' + (lat<0?'–' + (-lat):lat) + '°';
+    fGID('numbers').appendChild(label);
+  }
+
+  // Latitude labels along left side
+  for (let lat = -10; lat > -90; lat -= 10) {
+    let label = fCSVGE('text');
+    let location = project(new LatLon(lat,-149.99));
+    let location2 = project(new LatLon(lat,-149.5));
+    let angle = rad2Deg(location.getAngleTo(location2));
+
+    label.setAttribute('x', location.x);
+    label.setAttribute('y', location.y);
+    label.setAttribute('transform', 'rotate(' + angle + ', ' + location.x +', ' + location.y + ')');
+    label.classList.add('left-align');
+    label.innerHTML = '' + (lat<0?'–' + (-lat):lat) + '°';
+    fGID('numbers').appendChild(label);
+  }
+
+  // Latitude labels along right side
+  for (let lat = -10; lat > -90; lat -= 10) {
+    let label = fCSVGE('text');
+    let location = project(new LatLon(lat,-150.001));
+    let location2 = project(new LatLon(lat,-150.1));
+    let angle = 180+rad2Deg(location.getAngleTo(location2));
+
+    label.setAttribute('x', location.x);
+    label.setAttribute('y', location.y);
+    label.setAttribute('transform', 'rotate(' + angle + ', ' + location.x +', ' + location.y + ')');
+    label.classList.add('right-align');
+    label.innerHTML = '' + (lat<0?'–' + (-lat):lat) + '°';
+    fGID('numbers').appendChild(label);
+  }
 }
 
 // ------------------------------------------------------------------
