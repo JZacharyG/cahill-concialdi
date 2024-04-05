@@ -109,6 +109,11 @@ const admin0_hide_cities = [
   'KIR', // Kiribati
   'BMU', // Bermuda
   'GIB', // Gibraltar
+  'BHR', // Bahrain
+  'TON', // Tonga
+  'FSM', // Micronesia
+  'MHL', // Marshall Islands
+  'PLW', // Palau
   ];
 
 function drawCities(labels = true) {
