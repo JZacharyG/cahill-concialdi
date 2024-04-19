@@ -307,8 +307,10 @@ function drawStateLabels() {
         return admin0_show_admin1.includes(adm0) && state.properties.name !== null
           || state.properties.type_en === 'Overseas department'
           || [
-              'PT.AC', // Azores
-            ].includes(state.properties.code_hasc);
+              1159315577, // Canary Islands (originally 'Santa Cruz de Tenerife')
+              1159310543, // Azores
+              1159309933, // Galápagos
+            ].includes(state.properties.ne_id);
       },
       state => {
         return state.properties.adm0_a3 === 'USA'?state.properties.postal:state.properties.name;
