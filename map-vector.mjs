@@ -163,7 +163,7 @@ function drawCities(labels = true) {
               break;
             case 'S':
               name.setAttribute('x', location.x + city.properties.label_dx);
-              name.setAttribute('y', location.y - city.properties.label_dy + 0.6);
+              name.setAttribute('y', location.y - city.properties.label_dy + 0.5);
               name.classList.add('center-align');
               break;
           }
@@ -246,7 +246,7 @@ function drawRegionLabels(data, destination_id, font_size, display_filter, name_
             if (45 < angle_to && angle_to < 135)
               anchor = [50,0];// = new Point(label_bbox.x+label_bbox.width/2, label_bbox.y+label_bbox.height);
             if (-45 > angle_to && angle_to > -135)
-              anchor = [50,100];// = new Point(label_bbox.x+label_bbox.width/2, label_bbox.y);
+              anchor = [50,85];// = new Point(label_bbox.x+label_bbox.width/2, label_bbox.y);
             if (-45 <= angle_to && angle_to <= 45)
               anchor = [100,50];// = new Point(label_bbox.x+label_bbox.width, label_bbox.y+label_bbox.height/2);
           }
